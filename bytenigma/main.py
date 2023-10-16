@@ -1,6 +1,5 @@
-from util import round_rotation, test
+from util import round_rotation
 from base64 import b64decode, b64encode
-from hashlib import sha256
 
 
 def _encrypt_byte(byte, rotor_array):
@@ -21,12 +20,5 @@ def encrypt(byte_string, rotor_array):
     return result
 
 
-if __name__ == "__main__":
-    p = b64decode("RGFzIGlzdCBlaW4gVGVzdC4=")
-    c = b64decode("lDEjvQHsKWD9c+dHIW++KRo=")
-    print(p)
-    print(c)
-    print(encrypt(p, test["rotors"]))
-    print(sha256(encrypt(b'\x00'*(2**20), test["rotors"])).hexdigest())
 
 
