@@ -4,7 +4,7 @@ from base64 import b64decode, b64encode
 
 def encrypt_byte(byte, rotor_array):
     rotors = len(rotor_array)
-    tmp = int.from_bytes(byte, byteorder='big')
+    tmp = byte
     for i in range(rotors):
         tmp = rotor_array[i][tmp]
     tmp ^= 255
@@ -12,11 +12,20 @@ def encrypt_byte(byte, rotor_array):
         tmp = rotor_array[i].index(tmp)
     return tmp.to_bytes(1, byteorder='big')
 
+def encrypt(byte_string, rotor_array):
+    result = b''
+    tmp_rotor_array = rotor_array
+    for i in byte_string:
+        result += encrypt_byte(i, tmp_rotor_array)
+        tmp_rotor_array = round_rotation(tmp_rotor_array)
+    return result
+
+
 if __name__ == "__main__":
     p = b64decode("RGFzIGlzdCBlaW4gVGVzdC4=")
     c = b64decode("lDEjvQHsKWD9c+dHIW++KRo=")
     print(p)
     print(c)
-    print(encrypt_byte(b'D', test["rotors"]))
+    print(encrypt(p, test["rotors"]))
 
 
