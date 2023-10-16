@@ -6,7 +6,8 @@ def rotation(rotation):
     result.append(carry)
     return [result, carry]
 
-
+def bit_complement(byte):
+    return int.from_bytes(byte)^255
 
 if __name__ == "__main__":    
     a = [1,2,3,4,5,6,7,0]
