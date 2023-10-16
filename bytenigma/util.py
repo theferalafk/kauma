@@ -17,9 +17,6 @@ def round_rotation(rotor_array):
             carried_byte = 1
     return result
 
-def bit_complement(byte):
-    return int.from_bytes(byte, byteorder="little")^255
-
 if __name__ == "__main__":    
     a = [[4, 6, 1, 2, 3, 7, 5, 0],[5, 0, 6, 3, 4, 1, 7, 2]]
 
