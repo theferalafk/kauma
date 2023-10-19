@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+from bytenigma import encrypt
+
+if __name__ == "__main__":
+    print("yoo")
