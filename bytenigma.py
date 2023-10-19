@@ -11,12 +11,12 @@ def _encrypt_byte(byte, rotor_array):
     return tmp.to_bytes(1, byteorder='big')
 
 def encrypt(byte_string, rotor_array):
-    result = b''
+    result = []
     tmp_rotor_array = rotor_array
     for i in byte_string:
-        result += _encrypt_byte(i, tmp_rotor_array)
+        result.append(_encrypt_byte(i, tmp_rotor_array))
         tmp_rotor_array = round_rotation(tmp_rotor_array)
-    return result
+    return b''.join(result)
 
 
 
