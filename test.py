@@ -1,4 +1,5 @@
 from bytenigma import encrypt
+from base64 import b64decode
 from hashlib import sha256
 
 test = {
@@ -785,9 +786,10 @@ test = {
 
 if __name__ == "__main__":
     
-    #p = b64decode("RGFzIGlzdCBlaW4gVGVzdC4=")
-    #c = b64decode("lDEjvQHsKWD9c+dHIW++KRo=")
-    #assert encrypt(p, test["rotors"]) == c
-    #assert encrypt(encrypt(p,test["rotors"]), test["rotors"]) == p
+    p = b64decode("RGFzIGlzdCBlaW4gVGVzdC4=")
+    c = b64decode("lDEjvQHsKWD9c+dHIW++KRo=")
+    assert encrypt(p, test["rotors"]) == c
+    assert encrypt(encrypt(p,test["rotors"]), test["rotors"]) == p
+    assert encrypt(encrypt(p*50,test["rotors"]*100),test["rotors"]*100) == p*50
     assert sha256(encrypt(b'\x00'*(2**20), test["rotors"])).hexdigest()=='306a58f1d0589ec1ff4af1637e76774957389aa6152b6e04d6b389b1980efa8c'
-    print("All tests succeded")
+    print("All tests succeeded")
