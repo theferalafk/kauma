@@ -1,5 +1,4 @@
 from util import round_rotation
-from base64 import b64decode, b64encode
 
 
 def _encrypt_byte(byte, rotor_array):
