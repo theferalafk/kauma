@@ -1,6 +1,7 @@
 from bytenigma import encrypt
 from base64 import b64decode
 from hashlib import sha256
+import random
 
 test = {
     "action": "bytenigma",
@@ -783,13 +784,29 @@ test = {
     "input": "RGFzIGlzdCBlaW4gVGVzdC4="
 }
 
+random.seed(10)
+
+def create_random_setup(n):
+    res = []
+    for _ in range(n):
+        tmp = [i for i in range(256)]
+        random.shuffle(tmp)
+        res.append(tmp)
+    return res
+
+def random_byte_string(n):
+    return b''.join([random.randint(0,255).to_bytes(1, byteorder='little') for i in range(n)])
 
 if __name__ == "__main__":
-    
+    print('running')
     p = b64decode("RGFzIGlzdCBlaW4gVGVzdC4=")
     c = b64decode("lDEjvQHsKWD9c+dHIW++KRo=")
     assert encrypt(p, test["rotors"]) == c
-    assert encrypt(encrypt(p,test["rotors"]), test["rotors"]) == p
-    assert encrypt(encrypt(p*50,test["rotors"]*100),test["rotors"]*100) == p*50
-    assert sha256(encrypt(b'\x00'*(2**20), test["rotors"])).hexdigest()=='306a58f1d0589ec1ff4af1637e76774957389aa6152b6e04d6b389b1980efa8c'
+    for i in range(100):
+        random_rotors = create_random_setup(random.randint(1,20))
+        p = random_byte_string(256)
+        assert encrypt(encrypt(p,random_rotors), random_rotors) == p
+    zero_mbi = encrypt(b'\x00'*(2**20), test["rotors"])
+    assert sha256(zero_mbi).hexdigest()=='306a58f1d0589ec1ff4af1637e76774957389aa6152b6e04d6b389b1980efa8c'
+    print()
     print("All tests succeeded")
