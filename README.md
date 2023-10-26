@@ -6,16 +6,20 @@
 
 #### Einleitung
 
-Die Bytenigma fungiert durch ihre Rotoren als polyalphabetische Substitutionschiffre, die auf der Blockgröße eines Bytes agiert. Dabei wird jedes Datenwort auf ein anderes Datenwort abgebildet. Ein Datenwort niemals auf sich selbst abgebildet werden. Dies ergibt sich aus dem Hin- und Rückweg eines einzelnen Verschlüsselungsschrittes. Da der aktuelle Block nach dem Hinweg durch die Rotoren invertiert wird, muss auf dem Rückweg ein anderer Block rauskommen, als der Eingabeblock.  
-Die Anzahl der zur Verschlüsselung verwendeten Substitutionsalphabete hängt von der Anzahl der Rotoren ab. Da die rotation der Rotoren und dem Überfluss des ersten Element eines Rotors, wiederholt sich dessen Reihenfolge immer nach 256<sup>n</sup> verschlüsselten Zeichen. N ist dabei die Anzahl der verwendeten Rotoren. 
+Die Bytenigma fungiert durch ihre Rotoren als polyalphabetische Substitutionschiffre, die auf der Blockgröße eines Bytes agiert. Dabei wird jedes Datenwort auf ein anderes Datenwort abgebildet. Ein Datenwort kann niemals auf sich selbst abgebildet werden. Dies ergibt sich aus dem Hin- und Rückweg eines einzelnen Verschlüsselungsschrittes. Da der aktuelle Block nach dem Hinweg durch die Rotoren invertiert wird, muss auf dem Rückweg ein anderer Block rauskommen, als der Eingabeblock.  
+Die Anzahl der zur Verschlüsselung verwendeten Substitutionsalphabete hängt von der Anzahl der Rotoren ab. Da die rotation der Rotoren und dem Überfluss des ersten Element eines Rotors, wiederholt sich dessen Reihenfolge immer nach 256<sup>n</sup> verschlüsselten Zeichen. N ist dabei die Anzahl der verwendeten Rotoren. Dies ergibt sich daraus, dass die grundlegende Konfiguration bekannt ist und es 256 Startpositionen pro Rotor gibt.
 
 #### Gibt es schwache Rotoren?
 
+Ja es gibt schwache Rotoren, einer davon ist zum Beispiel [0,1,2...255]. Hierbei werden die Datenworte im ersten Block einfach nur invertiert. Ebenso lässt sich durch einen aus Null-Bytes bestehenden Klartext die lineare Abhängigkeit sofort sehen, wir ein solcher Rotor verwendet. Da die verwendeten Rotoren bekannt sind, ist es somit auch trvial die Startkonfiguration herauszufinden und somit den Schlüssel erhalten, wenn der Angreifer ein Klartext-Chiffrat paar besitzt. Dieser Angriff wird schwerer bei anderen Rotoren, ist jedoch immer noch bei einem Rotor leicht durchführbar. Durch den Schlüsselraum von 256 <sup>n</sup> ist es auch notwendig eine vielzahl von Rotoren zu verwenden, damit der Schlüssel nicht direkt einfach Bruteforced werden kann.
 
+Also ja es gibt schwache Rotoren. 
 
 #### Ist die Bytenigma kryptografisch stark, wenn randomisierte Rotoren gewählt werden?
  
-Dadurch, dass es sich bei der Bytenigma um eine polyalphabetische Substitutionschiffre handelt, gibt es hierbei diesselben Probleme, wie bei anderen polyalphabetischen Substitionschiffren. Hierbei gibt es eine Neigung, die vom verwendeten Eingabewert abhängt. Da sich die Alphabete wiederholen, sobald die zu verschlüsselnde Nachricht länger als die Anzahl der Alphabete (256<sup>n</sup>) ist, lassen sich Häufigkeitsanalysen über verschlüsselte Texte machen. Somit können Nachrichten entschlüsselt werden, solange der verschlüsselte ein großes Vielfaches der Anzahl der benutzen Alphabete ist. Ein Beispiel hierfür ist ein Lorem Ipsum (zu finden im Ordner analysis als lorem_ipsum.txt). Um die Sichtbarkeit des Effektes zu erhöhen wird zur Demonstration nur ein Rotor verwendet. Mit mehr Rotoren besteht dieser Effekt immer noch, jedoch muss die verschlüsselte Nachricht entsprechend lang genug sein. Als Rotor wurde der erste Rotor aus ./analysis/bias.json verwendet. Nachfolgend zu sehen ist das Histogramm des Chiffrats in alle 256 Bytes. Hierbei lässt sich die erwartete Verteilung eines lateinischen Alphabets beobachten. Auf der X-Achse sind dabei die verschiedenen Bytes zu sehen und auf der Y-Achse das Auftreten der Bytes. Diese Eigenshaften entstehen unabhängig von den gewählten Rotoren. 
+Dadurch, dass es sich bei der Bytenigma um eine polyalphabetische Substitutionschiffre handelt, gibt es hierbei diesselben Probleme, wie bei anderen polyalphabetischen Substitionschiffren. Hierbei gibt es eine Neigung, die vom verwendeten Eingabewert abhängt. Da sich die Alphabete wiederholen, sobald die zu verschlüsselnde Nachricht länger als die Anzahl der Alphabete (256<sup>n</sup>) ist, lassen sich Häufigkeitsanalysen über verschlüsselte Texte machen. Somit können Nachrichten entschlüsselt werden, solange der verschlüsselte ein großes Vielfaches der Anzahl der benutzen Alphabete ist. 
+Dieser Effekt besteht bei jedem möglichen Rotor, somit sind randomisierte Rotoren niemals sicher.
+Ein Beispiel hierfür ist ein Lorem Ipsum (zu finden im Ordner analysis als lorem_ipsum.txt). Um die Sichtbarkeit des Effektes zu erhöhen wird zur Demonstration nur ein Rotor verwendet. Mit mehr Rotoren besteht dieser Effekt immer noch, jedoch muss die verschlüsselte Nachricht entsprechend lang genug sein. Als Rotor wurde der erste Rotor aus ./analysis/bias.json verwendet. Nachfolgend zu sehen ist das Histogramm des Chiffrats in alle 256 Bytes. Hierbei lässt sich die erwartete Verteilung eines lateinischen Alphabets beobachten. Auf der X-Achse sind dabei die verschiedenen Bytes zu sehen und auf der Y-Achse das Auftreten der Bytes. Diese Eigenshaften entstehen unabhängig von den gewählten Rotoren. 
 
 Offset 0:
 ![sliced_0](./analysis/sliced_0.png)
@@ -28,8 +32,7 @@ Ohne Aufteilung:
 
 Zusammen mit den entstehendenden Neigungen durch bestimmte Klartexte (nähere Beschreibung folgt im nächsten Abschnitt) ist kryptographisch gesehen nicht stark, da somit die Vertraulichkeit gebrochen ist und Erkenntnisse über den Klartext gewonnen werden können, ohne die Rotorenkonfiguration zu kennen, welche ja hierbei dem Schlüssel entspricht.
 
-
-
+Ebenso ist durch die Existenz von unsicheren Rotoren eine zufällige Generierung von Rotoren nicht sicher. 
 
 #### Wie gut sind die Eigenschaften der Ununterscheidbarkeit (indistinguishability) und Neigung (bias) bzw wie hängen diese mit der Anzahl der verwendeten Rotoren zusammen?
 
@@ -52,3 +55,5 @@ Drei Rotoren:
 Damit lässt sich abschließend sagen, dass die Eigenschaft der Ununterscheidbarkeit durch die entstehende Neigungen nicht erreichen lässt. Es lassen sich immer Klartexte finden, für die eine Neigung entsteht. Wir ein begrenztes Alphabet für den Klartext verwendet, so lässt sich die Neigung durch hinzufügen von Rotoren verringern und damit wird die Ununterscheidbarkeit für diesen Fall erhöht. Da sich damit aber immer noch Klartexte wählen lassen, bei welchen die Ununterscheidbarkeit nicht gegeben ist, ist diese Verschlüsselung immer noch kaputt. 
 
 #### Abschließende Bewertung:
+
+Die Bytenigame ist nicht kryptographisch gesehen nicht gut und bricht mehrere Eigenschaften und ist durch mehrere Angreifermodelle angreifbar. Manche davon brechen die Verschlüsselung komplett, wie zum Beispiel das Aufteilen des Chiffrats im Zusammenhang mit einer Häufigkeitsanalyse bei einem bekannten Alphabet. Ein anderes Beispiel ist das Verfehlen des Ziels der Ununterscheidbarkeit dadurch, dass ein Datenwort immer auf ein anderen abgebildet wird. Bei schwachen Konfigurationen (zu wenig Rotoren) kann es keinen sicheren Schlüssel geben, da alles einfach bruteforcebar ist.
