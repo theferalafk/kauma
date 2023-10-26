@@ -7,7 +7,7 @@
 #### Einleitung
 
 Die Bytenigma fungiert durch ihre Rotoren als polyalphabetische Substitutionschiffre, die auf der Blockgröße eines Bytes agiert. Dabei wird jedes Datenwort auf ein anderes Datenwort abgebildet. Ein Datenwort kann niemals auf sich selbst abgebildet werden. Dies ergibt sich aus dem Hin- und Rückweg eines einzelnen Verschlüsselungsschrittes. Da der aktuelle Block nach dem Hinweg durch die Rotoren invertiert wird, muss auf dem Rückweg ein anderer Block rauskommen, als der Eingabeblock.  
-Die Anzahl der zur Verschlüsselung verwendeten Substitutionsalphabete hängt von der Anzahl der Rotoren ab. Da die rotation der Rotoren und dem Überfluss des ersten Element eines Rotors, wiederholt sich dessen Reihenfolge immer nach 256<sup>n</sup> verschlüsselten Zeichen. N ist dabei die Anzahl der verwendeten Rotoren. Dies ergibt sich daraus, dass die grundlegende Konfiguration bekannt ist und es 256 Startpositionen pro Rotor gibt.
+Die Anzahl der zur Verschlüsselung verwendeten Substitutionsalphabete hängt von der Anzahl der Rotoren ab. Da die rotation der Rotoren und dem Überfluss des ersten Element eines Rotors, wiederholt sich dessen Reihenfolge immer nach 256<sup>n</sup> verschlüsselten Zeichen. N ist dabei die Anzahl der verwendeten Rotoren. Dies ergibt sich daraus, dass die grundlegende Konfiguration bekannt ist und es 256 Startpositionen pro Rotor gibt. Der Schlüsselraum entspricht dabei auch Periode der gesammten Konstruktion. Also ist die Konfiguration der Rotoren nach 256<sup>n</sup> Bytes identisch zur Startposition. 
 
 #### Gibt es schwache Rotoren?
 
