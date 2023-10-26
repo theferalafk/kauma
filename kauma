@@ -20,6 +20,7 @@ def assemble_output(byte_string):
     return '{\n\t"output": "'+output_string+'"\n}'
 
 def bytenigma(input_file):
+    #takes a json file as an input and outputs a json of the from { "output": output }
     try:
         file_content = ''
         with open(input_file, 'r') as f:
@@ -28,6 +29,7 @@ def bytenigma(input_file):
         cipher = encrypt(input_string, rotors)
         return assemble_output(cipher)
     except:
+        print('error with encryption', file=stderr)
         print(format_exc(), file=stderr)
         exit(1)
     
