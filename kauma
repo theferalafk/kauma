@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-from bytenigma import encrypt
+from bytenigma.bytenigma import encrypt
 from sys import stderr, argv
 from traceback import format_exc
 from base64 import b64encode, b64decode
-from bytenigma import encrypt
+from bytenigma.bytenigma import encrypt
 from json import loads
 
 def parse_input(enigma_dict):

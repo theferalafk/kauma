@@ -1,4 +1,4 @@
-from util import round_rotation
+from bytenigma.util import round_rotation
 
 
 def _encrypt_byte(byte, rotor_array):
