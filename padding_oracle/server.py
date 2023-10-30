@@ -3,7 +3,7 @@ from crypto_until import unpad, encrypt, BLOCK_SIZE
 
 
 HOST = "127.0.0.1"
-PORT = 3874
+PORT = 3875
 
     
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -21,11 +21,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             response = []
             for iv in iv_list:
                 #hier muss noch error handling wenn blockgröße nicht erreicht ist
-                print(iv, ct)
                 padded_pt = encrypt(iv, ct)
-                print(padded_pt)
                 if unpad(padded_pt):
                     response.append(b'\x01')
+                    print(padded_pt)
                 else:
                     response.append(b'\x00')
             conn.send(b''.join(response))

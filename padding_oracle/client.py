@@ -2,7 +2,7 @@ import socket
 from crypto_until import encrypt, pad
 
 host = "127.0.0.1"
-port = 3874
+port = 3875
 
 def send_oracle_protocol(host, port, n_blocks, ct, iv_list):
     res = b''
@@ -13,7 +13,6 @@ def send_oracle_protocol(host, port, n_blocks, ct, iv_list):
         s.send(n_blocks.to_bytes(2, byteorder='little'))
         for iv in iv_list:
             s.send(iv)
-        print('receiving')
         res = s.recv(n_blocks)
     return res
 
