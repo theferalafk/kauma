@@ -1,9 +1,9 @@
 import socket
-from crypto_until import unpad, encrypt, BLOCK_SIZE
+from crypto_util import unpad, encrypt, BLOCK_SIZE
 
 
 HOST = "127.0.0.1"
-PORT = 3875
+PORT = 3874
 
     
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -11,6 +11,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
     while True:
+        print("running")
         conn, addr = s.accept()
         with conn:
             ct = conn.recv(BLOCK_SIZE)
@@ -24,7 +25,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 padded_pt = encrypt(iv, ct)
                 if unpad(padded_pt):
                     response.append(b'\x01')
-                    print(padded_pt)
+                    print("received iv: ", iv)
+                    print("received ct: ", ct)
+                    print("\tpadded: ", padded_pt)
+                    print("\tunpadded: ", unpad(padded_pt))
                 else:
                     response.append(b'\x00')
             conn.send(b''.join(response))
