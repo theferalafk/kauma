@@ -7,6 +7,7 @@ PORT = 3874
 
     
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #schönere funktion finden
     s.bind((HOST, PORT))
     s.listen()
     while True:
@@ -28,5 +29,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 else:
                     response.append(b'\x00')
             conn.send(b''.join(response))
-            conn.close()
             
