@@ -3,7 +3,7 @@ BLOCK_SIZE = 16
 SECRET_KEY = b'zuttomayonakadeiinoni'
 
 def _encrypt_block(data):
-    return int.from_bytes(SECRET_KEY, byteorder='little')&(2**BLOCK_SIZE) ^ data
+    return int.from_bytes(SECRET_KEY, byteorder='little')&(2**BLOCK_SIZE-1) ^ data
 
 def encrypt(iv, pt):
     res = []
