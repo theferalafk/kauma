@@ -1,9 +1,6 @@
 import socket
 from crypto_util import encrypt, pad
 
-host = "141.72.5.194"
-port = 18732
-
 def send_oracle_protocol(host, port, ct, iv_list):
     res = b''
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
