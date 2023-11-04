@@ -3,19 +3,15 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 BLOCK_SIZE = 16
 SECRET_KEY = b'mayonakadeiinoni'
 
-def _encrypt_block(data):
-    tmp = int.from_bytes(SECRET_KEY, byteorder='little')&(2**(8*BLOCK_SIZE)-1) ^ data
-    return tmp
-
 def encrypt(iv, pt):
-    res = []
-    last_block = iv
-    for i in range(int(len(pt)/BLOCK_SIZE)):
-        starting_byte = BLOCK_SIZE * i
-        current_block = pt[starting_byte:starting_byte+BLOCK_SIZE]
-        ct = _encrypt_block(int.from_bytes(current_block, byteorder='little') ^ int.from_bytes(last_block, byteorder='little')).to_bytes(BLOCK_SIZE, byteorder='little')
-        res.append(ct)
-    return b''.join(res)
+    cipher = Cipher(algorithms.AES(SECRET_KEY), modes.CBC(iv))
+    encryptor = cipher.encryptor()
+    return encryptor.update(pt) + encryptor.finalize()
+
+def decrypt(iv, ct):
+    cipher = Cipher(algorithms.AES(SECRET_KEY), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+    return decryptor.update(ct) + decryptor.finalize()
 
 
 def pad(data):
