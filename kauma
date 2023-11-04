@@ -1,39 +1,81 @@
 #!/usr/bin/python3
-from bytenigma.bytenigma import encrypt
+from bytenigma.bytenigma import encrypt as bytenigma_encrypt
 from sys import stderr, argv
 from traceback import format_exc
 from base64 import b64encode, b64decode
-from bytenigma.bytenigma import encrypt
 from json import loads
+from padding_oracle.exploit_oracle import oracle_solver
 
-def parse_input(enigma_dict):
+#------------------------------------------BYTENIGMA-------------------------------------------------------------
+
+
+def _parse_input_bytenigma(enigma_dict):
     try:
         input_string = b64decode(enigma_dict['input'])
         return input_string, enigma_dict['rotors']
     except:
-        print('error parsing json', file=stderr)
+        print('error parsing bytenigma json', file=stderr)
         print(format_exc(), file=stderr)
         exit(1)
 
-def assemble_output(byte_string):
+def _assemble_output_bytenigma(byte_string):
     output_string = b64encode(byte_string).decode()
     return '{\n\t"output": "'+output_string+'"\n}'
 
-def bytenigma(input_file):
-    #takes a json file as an input and outputs a json of the from { "output": output }
+def _bytenigma(action_dict):
+    #takes json as an input and outputs a json of the from { "output": output }
+    try:
+        input_string, rotors = _parse_input_bytenigma(action_dict)
+        cipher = bytenigma_encrypt(input_string, rotors)
+        return _assemble_output_bytenigma(cipher)
+    except:
+        print('error with bytenigma encryption', file=stderr)
+        print(format_exc(), file=stderr)
+        exit(1)
+
+#------------------------------------------PADDING ORACLE------------------------------------------------------------- 
+def _parse_input_padding_oracle(padding_oracle_dict):
+    try:
+        iv = b64decode(padding_oracle_dict["iv"])
+        ct = b64decode(padding_oracle_dict["ciphertext"])
+        return padding_oracle_dict["hostname"], padding_oracle_dict["port"], iv, ct
+    except:
+        print('error parsing padding oracle json', file=stderr)
+        print(format_exc(), file=stderr)
+        exit(1)
+
+def _assemble_output_padding_oracle(byte_string):
+    output_string = b64encode(byte_string).decode()
+    return '{\n\t"plaintext": "'+output_string+'"\n}'
+
+
+def _padding_oracle_attack(action_dict):
+    #takes json as an input and outputs a json of the from { "output": output }
+    try:
+        host, port, iv, ct = _parse_input_padding_oracle(action_dict)
+        pt = oracle_solver(host, port, iv, ct)
+        return _assemble_output_padding_oracle(pt)
+    except:
+        print('error with padding oracle attack', file=stderr)
+        print(format_exc(), file=stderr)
+        exit(1)
+
+
+#------------------------------------------ACTION PARSER-------------------------------------------------------------
+
+def parse_json(input_file):
     try:
         file_content = ''
         with open(input_file, 'r') as f:
             file_content = loads(f.read())
-        input_string, rotors = parse_input(file_content)
-        cipher = encrypt(input_string, rotors)
-        return assemble_output(cipher)
+        if file_content['action']=='bytenigma':
+            return _bytenigma(file_content)
+        if file_content['action']=='padding-oracle-attack':
+            return _padding_oracle_attack(file_content)
     except:
-        print('error with encryption', file=stderr)
+        print('could not parse action', file=stderr)
         print(format_exc(), file=stderr)
         exit(1)
-    
-
 
 if __name__ == "__main__":
-    print(bytenigma(argv[1]))
+    print(parse_json(argv[1]))
