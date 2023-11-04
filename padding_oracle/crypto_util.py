@@ -43,6 +43,9 @@ def unpad(data):
         return unpadded_data + unpadder.finalize()
     except ValueError:
         return False
+    
+def byte_xor(a,b):
+    return (int.from_bytes(a, byteorder='little') ^ int.from_bytes(b, byteorder='little')).to_bytes(16, byteorder='little')
 
 if __name__ == '__main__':
     c2 = encrypt(b'\x12\x34'*8, pad(b'djbernstein'))
