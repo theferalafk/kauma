@@ -1,5 +1,5 @@
-from exploit_oracle import oracle_solver
-from crypto_util import encrypt, decrypt, pad, unpad
+from padding_oracle.exploit_oracle import oracle_solver
+from padding_oracle.crypto_util import encrypt, decrypt, pad, unpad
 
 if __name__ == "__main__":
     host = "127.0.0.1"
