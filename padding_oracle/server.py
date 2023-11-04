@@ -23,7 +23,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             for iv in iv_list:
                 #hier muss noch error handling wenn blockgröße nicht erreicht ist
                 padded_pt = encrypt(iv, ct)
-                if unpad(padded_pt):
+                result = unpad(padded_pt)
+                if result or result==b'':
                     response.append(b'\x01')
                     print("received iv: ", iv)
                     print("received ct: ", ct)
@@ -32,4 +33,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 else:
                     response.append(b'\x00')
             conn.send(b''.join(response))
+            conn.close()
             
