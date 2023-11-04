@@ -28,8 +28,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     response.append(b'\x01')
                     print("received iv: ", iv)
                     print("received ct: ", ct)
-                    print("\tpadded: ", padded_pt)
-                    print("\tunpadded: ", unpad(padded_pt))
+                    print("padded: ", padded_pt)
+                    print("unpadded: ", unpad(padded_pt))
                 else:
                     response.append(b'\x00')
             conn.send(b''.join(response))
