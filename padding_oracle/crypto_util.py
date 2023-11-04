@@ -17,19 +17,6 @@ def encrypt(iv, pt):
         res.append(ct)
     return b''.join(res)
 
-def two_crypt(iv, pt):
-    algo = algorithms.AES(key=SECRET_KEY)
-    cipher = Cipher(algo, mode='CBC')
-    encryptor = cipher.encryptor()
-    ct = encryptor.update(pt)
-    return ct
-
-def three_crypt(iv, ct):
-    algo = algorithms.AES(key=SECRET_KEY)
-    cipher = Cipher(algo, mode='CBC')
-    decryptor = cipher.decryptor()
-    pt = decryptor.update(ct)
-    return pt
 
 def pad(data):
     padder = PKCS7(BLOCK_SIZE*8).padder()
@@ -46,13 +33,3 @@ def unpad(data):
     
 def byte_xor(a,b):
     return (int.from_bytes(a, byteorder='little') ^ int.from_bytes(b, byteorder='little')).to_bytes(16, byteorder='little')
-
-if __name__ == '__main__':
-    c2 = encrypt(b'\x12\x34'*8, pad(b'djbernstein'))
-    p2 = encrypt(b'\x12\x34'*8, c2)
-    p1 = encrypt(b'\x00'*15+b'\x04', c2)
-    print(c2)
-    print(p2)
-    print(p1)
-    print(_encrypt_block(_encrypt_block(int.from_bytes(pad(b'djbernstein'), byteorder='little')^0x12341234123412341234123412341234)).to_bytes(16, byteorder='little'))
-    print(_encrypt_block((_encrypt_block(int.from_bytes(pad(b'djbernstein'), byteorder='little')))^0x12341234123412341234123412341234).to_bytes(16, byteorder='little'))
