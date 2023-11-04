@@ -1,5 +1,5 @@
 import socket
-from crypto_util import encrypt, pad
+from padding_oracle.crypto_util import encrypt, pad
 
 def send_oracle_protocol(host, port, ct, iv_list):
     res = b''
