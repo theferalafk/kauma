@@ -3,14 +3,13 @@ from padding_oracle.crypto_util import encrypt, pad
 
 def send_oracle_protocol(host, port, ct, iv_list):
     res = b''
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    with socket.create_connection((host, port)) as s:
         #schönere funktion finden
-        s.connect((host, port))
-        s.send(ct)
+        s.sendall(ct)
         n_blocks = len(iv_list)
-        s.send(n_blocks.to_bytes(2, byteorder='little'))
+        s.sendall(n_blocks.to_bytes(2, byteorder='little'))
         for iv in iv_list:
-            s.send(iv)
+            s.sendall(iv)
         res = s.recv(n_blocks)
     return res
 

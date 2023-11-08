@@ -4,12 +4,13 @@ from crypto_util import unpad, decrypt, BLOCK_SIZE
 
 HOST = "127.0.0.1"
 PORT = 3874
-
+VERBOSE = False
 if __name__ == "__main__":
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    with socket.create_server((HOST, PORT)) as s:
         #schönere funktion finden
         print("running")
-        s.bind((HOST, PORT))
+        #s.bind((HOST, PORT))
         s.listen()
         while True:
             conn, addr = s.accept()
@@ -26,11 +27,12 @@ if __name__ == "__main__":
                     result = unpad(padded_pt)
                     if result or result==b'':
                         response.append(b'\x01')
-                        print("received iv: ", iv)
-                        print("received ct: ", ct)
-                        print("padded: ", padded_pt)
-                        print("unpadded: ", unpad(padded_pt))
+                        if VERBOSE:
+                            print("received iv: ", iv)
+                            print("received ct: ", ct)
+                            print("padded: ", padded_pt)
+                            print("unpadded: ", unpad(padded_pt))
                     else:
                         response.append(b'\x00')
-                conn.send(b''.join(response))
+                conn.sendall(b''.join(response))
             
