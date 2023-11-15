@@ -13,6 +13,7 @@ class GF:
     def _bitarray_to_poly(a, highest_exponent=128):
         #transform bit array to poly list
         res = []
+        #in range(highest_exponent) so it does need to compute entire array in case e.g. hightest exponent=3 but array is [1,1,1,0,0,0,0,0,0,0,0,0,0,0]
         for i in range(highest_exponent+1):
             if a[i]==1:
                 res.append(i)       
@@ -63,19 +64,49 @@ class GFElement:
 
 
 
+if __name__ == "__main__":
 
-poly2block = b'\x08\x81\x81\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-block2poly = b':G\xc5E\xf1\xd8\x7f\xfb\x7f<\x82\xd2\x0b\xbd:B'
+    # test for poly_to_block / block_to_poly
 
-tmp = GF.block_to_poly(block2poly)
-print(tmp)
-print(GF.poly_to_block(tmp))
-print(GF.poly_to_block([4,8,15,16,23,42]))
+    #known answer test 0
+    block= b'\x08\x81\x81\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+    poly = [4, 8, 15, 16, 23, 42]
+    assert GF.block_to_poly(block)==poly
+    assert GF.poly_to_block(poly)==block
 
+    #known answer test 1 
+    block = b':G\xc5E\xf1\xd8\x7f\xfb\x7f<\x82\xd2\x0b\xbd:B'
+    poly = [2, 3, 4, 6, 9, 13, 14, 15, 16, 17, 21, 23, 25, 29, 31, 32, 33, 34, 35, 39, 40, 41, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 62, 63, 65, 66, 67, 68, 69, 70, 71, 74, 75, 76, 77, 80, 86, 88, 89, 91, 94, 100, 102, 103, 104, 106, 107, 108, 109, 111, 114, 115, 116, 118, 121, 126]
+    assert GF.block_to_poly(block)==poly
+    assert GF.poly_to_block(poly)==block
 
-cp = GF._bitarray_to_poly([1,0,1,1,0,0,1,0,1],8)
-print(cp)
-gf = GF(cp)
-red = GF._bitarray_to_poly([0,0,1,0,1,0,1,1,1,0,0,0,0,1,1], len([0,0,1,0,1,0,1,1,1,0,0,0,0,1,1])-1)
-print(gf.reduce(red))
-print(GF._bitarray_to_poly([0,0,0,1,1,1,0,1],7))
+    # test for _bitarray_to_poly / _poly_to_bitarray
+
+    #known answer test 0
+    poly = [0, 2, 3, 6, 8]
+    bitarray = [1, 0, 1, 1, 0, 0, 1, 0, 1]
+    assert GF._poly_to_bitarray(poly)==bitarray
+    assert GF._bitarray_to_poly(bitarray,len(bitarray)-1)==poly
+
+    #known answer test 1
+    poly = [2, 4, 6, 7, 8, 13, 14]
+    bitarray = [0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1]
+    assert GF._poly_to_bitarray(poly)==bitarray
+    assert GF._bitarray_to_poly(bitarray,len(bitarray)-1)==poly
+
+    #known anser test 2
+    poly = [2, 3, 4, 6, 9, 13, 14, 15, 16, 17, 21, 23, 25, 29, 31, 32, 33, 34, 35, 39, 40, 41, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 62, 63, 65, 66, 67, 68, 69, 70, 71, 74, 75, 76, 77, 80, 86, 88, 89, 91, 94, 100, 102, 103, 104, 106, 107, 108, 109, 111, 114, 115, 116, 118, 121, 126]
+    bitarray = [0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]
+    assert GF._poly_to_bitarray(poly)==bitarray
+    assert GF._bitarray_to_poly(bitarray,len(bitarray)-1)==poly
+
+    # test for reduce
+
+    #known answer test 1
+    cp = [0, 2, 3, 6, 8]
+    gf = GF(cp)
+    full_size = [2, 4, 6, 7, 8, 13, 14]
+    reduced = [3, 4, 5, 7]
+    assert gf.reduce(full_size)==reduced
+
+    print("All tests were passed successfully")
