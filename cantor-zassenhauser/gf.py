@@ -30,7 +30,9 @@ class GF:
     def reduce(self, a):
         #reduces a given poly list into initialized the galios field
         #returns the result as an poly list
-
+        #if element is already in the field
+        if a[-1]<self._field_size:
+            return a
         #if only one reduction is needed
         if a[-1]==self._field_size:
             return self._reduce_one(a)
@@ -57,6 +59,10 @@ class GF:
             b = self.reduce(b)
 
         accumulator = GF._poly_to_bitarray(a)
+        #if accumulator is too small, pad with zeros
+        acc_len = len(accumulator)
+        if acc_len<self._field_size:
+            accumulator += [0]*(self._field_size-acc_len)
         b_bitarray = GF._poly_to_bitarray(b)
         res = [0]*self._field_size
         for bit in b_bitarray:
@@ -91,7 +97,7 @@ class GFElement:
         self.element = gf.reduce(element)
 
     def __mul__(self, a):
-        pass
+        return self.gf.carry_less_mul_gf(self.element, a.element)
 
 
 
@@ -140,9 +146,28 @@ if __name__ == "__main__":
     reduced = [3, 4, 5, 7]
     assert gf.reduce(full_size)==reduced
 
+    # test for carry_less_mul_gf
+
+    #known answer test 0
     a = [0,2,7]
     b = [2,6,7]
     res = gf.carry_less_mul_gf(a,b)
-    assert res == gf.carry_less_mul_gf(b,a) 
-    assert res == [3,4,5,7]
+    assert res == gf.carry_less_mul_gf(b,a) == [3,4,5,7]
+    a = GFElement([0,2,7],gf)
+    b = GFElement([2,6,7],gf)
+    assert a*b == b*a == [3,4,5,7]
+    c = GFElement([1,2],gf)
+    a*c
+    c*a
+
+    #known answer test 1
+    a_block = b'\x8e6(\x0f\xa9\x1f7\xef\xd8\xfe\x0e\x07\x97\xdfu\x0b'
+    b_block = b'\xb5\x0b\x13\xa0\xce\x1b\xcc\xe4-\xa2\xdf\xf5\xc3\x8c|<'
+    a_times_b_block = b'\x92\x19\xefb+iMo\x12\xbfvT\x98Z\x9a\xb3'
+    a_times_b_poly = [0, 3, 6, 11, 12, 15, 16, 17, 18, 20, 21, 22, 23, 25, 26, 30, 34, 36, 38, 39, 41, 42, 44, 47, 49, 52, 53, 55, 57, 58, 60, 61, 62, 63, 67, 70, 72, 74, 75, 76, 77, 78, 79, 81, 82, 83, 85, 86, 89, 91, 93, 96, 99, 100, 105, 107, 108, 110, 112, 115, 116, 118, 120, 122, 123, 126, 127]
+    a = GFElement(GF.block_to_poly(a_block))
+    b = GFElement(GF.block_to_poly(b_block))
+    assert a_times_b_block == GF.poly_to_block(a_times_b_poly)
+    assert a_times_b_poly == GF.block_to_poly(a_times_b_block)
+    assert a*b == b*a == a_times_b_poly
     print("All tests were passed successfully")
