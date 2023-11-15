@@ -7,39 +7,70 @@ class GF:
         #transform poly list to bit array
         res = [0]*(a[-1]+1)
         for exp in a:
-            res[exp] = 1
+                res[exp] = 1
         return res
 
-    def _bitarray_to_poly(a, highest_exponent=128):
+    def _bitarray_to_poly(a, highest_exponent=False):
         #transform bit array to poly list
         res = []
         #in range(highest_exponent) so it does need to compute entire array in case e.g. hightest exponent=3 but array is [1,1,1,0,0,0,0,0,0,0,0,0,0,0]
+        if not highest_exponent:
+            highest_exponent=len(a)-1
         for i in range(highest_exponent+1):
             if a[i]==1:
                 res.append(i)       
         return res 
+    
+    def _reduce_one(self, a):
+        res = a
+        for exp in self._cp:
+            res[exp] ^= 1
+        return res[:-1]
 
     def reduce(self, a):
         #reduces a given poly list into initialized the galios field
         #returns the result as an poly list
 
+        #if only one reduction is needed
+        if a[-1]==self._field_size:
+            return self._reduce_one(a)
+        
+        #more then one reduction
         tmp = GF._poly_to_bitarray(a)
-        
         diff = a[-1] - self._field_size
-        #print("current round:  -", list(reversed(tmp)))
         for i in range(diff,0,-1):
-        #check if bit array needs to be reduced
-            #xor characteristic poly shifted to bit array
-            for exp in self._cp:
-                tmp[exp+i] ^= 1
-            #print("current round: ", i, list(reversed(tmp)))
-            if not 1 in tmp[self._field_size:]:
-                break
-        #print(list(reversed(tmp)), self._field_size)
+            #checks for leading 1 to reduce
+            if tmp[-1]==1:
+                #xor characteristic poly shifted to bit array
+                for exp in self._cp:
+                    tmp[exp+i] ^= 1
+            tmp=tmp[:-1]
         return GF._bitarray_to_poly(tmp, self._field_size)
-        
     
 
+    
+    def carry_less_mul_gf(self, a, b):
+        #normalize a and b if needed
+        if a[-1]>self._field_size-1:
+            a = self.reduce(a)
+        if b[-1]>self._field_size-1:
+            b = self.reduce(b)
+
+        accumulator = GF._poly_to_bitarray(a)
+        b_bitarray = GF._poly_to_bitarray(b)
+        res = [0]*self._field_size
+        for bit in b_bitarray:
+            if bit==1:
+                for i, bit in enumerate(accumulator):
+                    res[i] ^= bit
+            accumulator = [0] + accumulator
+            if accumulator[-1]==1:
+                accumulator = self._reduce_one(accumulator)
+            else:
+                accumulator = accumulator[:-1]
+
+        return GF._bitarray_to_poly(res)
+        
     def block_to_poly(block : bytes):
         number = int.from_bytes(block, byteorder='big')
         res = []
@@ -109,4 +140,9 @@ if __name__ == "__main__":
     reduced = [3, 4, 5, 7]
     assert gf.reduce(full_size)==reduced
 
+    a = [0,2,7]
+    b = [2,6,7]
+    res = gf.carry_less_mul_gf(a,b)
+    assert res == gf.carry_less_mul_gf(b,a) 
+    assert res == [3,4,5,7]
     print("All tests were passed successfully")
