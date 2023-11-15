@@ -94,7 +94,7 @@ class GF:
         return number.to_bytes(16, byteorder='big')
 
 class GFElement:
-    def __init__(self,element,gf=GF()):
+    def __init__(self, element, gf=GF()):
         self.gf = gf
         self.element = gf.reduce(element)
 
