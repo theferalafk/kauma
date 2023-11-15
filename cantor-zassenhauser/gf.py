@@ -1,5 +1,5 @@
 class GF:
-    def __init__(self,  characteristic_polynomial=[0,1,2,7,128]):
+    def __init__(self, characteristic_polynomial=[0,1,2,7,128]):
         self._cp = characteristic_polynomial
         self._field_size = characteristic_polynomial[-1]
 
@@ -52,6 +52,8 @@ class GF:
 
     
     def carry_less_mul_gf(self, a, b):
+        #takes two poly form elements of a field and multiplies them carryless
+        #returns a new poly form element
         #normalize a and b if needed
         if a[-1]>self._field_size-1:
             a = self.reduce(a)
@@ -97,6 +99,7 @@ class GFElement:
         self.element = gf.reduce(element)
 
     def __mul__(self, a):
+        #carryless mul on two gf elements, if the elements are not of the same gf, the multiplication uses the field of the first element e.g (a*b) field of a is used 
         return self.gf.carry_less_mul_gf(self.element, a.element)
 
 
@@ -157,8 +160,6 @@ if __name__ == "__main__":
     b = GFElement([2,6,7],gf)
     assert a*b == b*a == [3,4,5,7]
     c = GFElement([1,2],gf)
-    a*c
-    c*a
 
     #known answer test 1
     a_block = b'\x8e6(\x0f\xa9\x1f7\xef\xd8\xfe\x0e\x07\x97\xdfu\x0b'
@@ -169,5 +170,7 @@ if __name__ == "__main__":
     b = GFElement(GF.block_to_poly(b_block))
     assert a_times_b_block == GF.poly_to_block(a_times_b_poly)
     assert a_times_b_poly == GF.block_to_poly(a_times_b_block)
+    #also test if a and b are not of same length
     assert a*b == b*a == a_times_b_poly
     print("All tests were passed successfully")
+
