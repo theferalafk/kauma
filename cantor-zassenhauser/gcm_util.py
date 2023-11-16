@@ -102,6 +102,18 @@ class GFElement:
         #carryless mul on two gf elements, if the elements are not of the same gf, the multiplication uses the field of the first element e.g (a*b) field of a is used 
         return self.gf.carry_less_mul_gf(self.element, a.element)
 
+class gcm_nonce:
+    def __init__(self, nonce):
+        #nonce should be max 96 bits and 1<=nonce<=2^64-1
+        self.nonce = nonce
+        self.counter = 0
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        self.counter += 1
+        return self.nonce.to_bytes()
 
 
 if __name__ == "__main__":
