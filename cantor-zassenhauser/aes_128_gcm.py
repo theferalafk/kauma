@@ -1,4 +1,4 @@
-from gf import GF, GFElement
+from gcm_util import GF, GFElement, gcm_nonce
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class AES_128_GCM:
@@ -21,3 +21,9 @@ class AES_128_GCM:
 
     def encrypt(pt, ad, nonce):
         pass
+
+
+if __name__ == "__main__":
+    iv = gcm_nonce(123)
+    a = iter(iv)
+    print(next(a))
