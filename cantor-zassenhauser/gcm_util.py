@@ -113,7 +113,7 @@ class gcm_nonce:
     
     def __next__(self):
         self.counter += 1
-        return self.nonce.to_bytes()
+        return self.nonce.to_bytes(12,byteorder='big')+self.counter.to_bytes(32, byteorder='big')
 
 
 if __name__ == "__main__":
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     assert a_times_b_poly == GF.block_to_poly(a_times_b_block)
     #also test if a and b are not of same length
     assert a*b == b*a == a_times_b_poly
-
+    print(GF.poly_to_block(a*b))
     #statistical tests
     import os
     for i in range(10000):
