@@ -107,14 +107,17 @@ class gcm_nonce:
         #nonce should be max 96 bits and 1<=nonce<=2^64-1
         self.nonce = nonce
         self.counter = 0
+        self.y0 = self.nonce.to_bytes(12,byteorder='big')+(1).to_bytes(4, byteorder='big')
 
     def __iter__(self):
         return self
     
     def __next__(self):
         self.counter += 1
-        return self.nonce.to_bytes(12,byteorder='big')+self.counter.to_bytes(32, byteorder='big')
+        return self.nonce.to_bytes(12,byteorder='big')+self.counter.to_bytes(4, byteorder='big')
 
+def byte_xor(a, b):
+        return (int.from_bytes(a, byteorder='little') ^ int.from_bytes(b, byteorder='little')).to_bytes(16, byteorder='little')
 
 if __name__ == "__main__":
 
