@@ -62,6 +62,7 @@ class GF:
 
         accumulator = GF._poly_to_bitarray(a)
         #if accumulator is too small, pad with zeros
+        #maybe change pcl mul qdq
         acc_len = len(accumulator)
         if acc_len<self._field_size:
             accumulator += [0]*(self._field_size-acc_len)
@@ -106,7 +107,7 @@ class gcm_nonce:
     def __init__(self, nonce):
         #nonce should be max 96 bits and 1<=nonce<=2^64-1
         self.nonce = nonce
-        self.counter = 0
+        self.counter = 1
         self.y0 = self.nonce.to_bytes(12,byteorder='big')+(1).to_bytes(4, byteorder='big')
 
     def __iter__(self):
@@ -117,7 +118,7 @@ class gcm_nonce:
         return self.nonce.to_bytes(12,byteorder='big')+self.counter.to_bytes(4, byteorder='big')
 
 def byte_xor(a, b):
-        return (int.from_bytes(a, byteorder='little') ^ int.from_bytes(b, byteorder='little')).to_bytes(16, byteorder='little')
+		return bytes(a ^ b for (a, b) in zip(a, b))
 
 if __name__ == "__main__":
 
