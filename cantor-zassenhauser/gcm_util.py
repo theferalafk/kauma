@@ -31,6 +31,8 @@ class GF:
         #reduces a given poly list into initialized the galios field
         #returns the result as an poly list
         #if element is already in the field
+        if len(a)==0:
+            return a
         if a[-1]<self._field_size:
             return a
         #if only one reduction is needed
@@ -55,6 +57,8 @@ class GF:
         #takes two poly form elements of a field and multiplies them carryless
         #returns a new poly form element
         #normalize a and b if needed
+        if len(a)==0 or len(b)==0:
+            return [] 
         if a[-1]>self._field_size-1:
             a = self.reduce(a)
         if b[-1]>self._field_size-1:
@@ -120,10 +124,17 @@ class gcm_nonce:
 def byte_xor(a, b):
 		return bytes(a ^ b for (a, b) in zip(a, b))
 
+def slice_bytestring(a : bytes, slice_size):
+    #slices a bytestring in slices of slice_size, if len(a) is not a multiple of the block size, the last block will be smaller
+    #returns an array of bytestrings -> [a_slice1, a_slice2, ...]
+    res = []
+    for i in range(0, len(a), slice_size):
+        res.append(a[i: slice_size + i])
+    return res
+
 if __name__ == "__main__":
 
     # test for poly_to_block / block_to_poly
-
     #known answer test 0
     block= b'\x08\x81\x81\x00\x00 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     poly = [4, 8, 15, 16, 23, 42]
