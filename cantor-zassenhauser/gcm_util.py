@@ -110,27 +110,15 @@ class GFElement:
 class gcm_nonce:
     def __init__(self, nonce):
         #nonce should be max 96 bits and 1<=nonce<=2^64-1
-        self.nonce = nonce
+        self.nonce = int.from_bytes(nonce, byteorder='big')
         self.counter = 1
-        self.y0 = self.nonce.to_bytes(12,byteorder='big')+(1).to_bytes(4, byteorder='big')
 
     def __iter__(self):
         return self
     
     def __next__(self):
-        self.counter += 1
-        return self.nonce.to_bytes(12,byteorder='big')+self.counter.to_bytes(4, byteorder='big')
-
-def byte_xor(a, b):
-		return bytes(a ^ b for (a, b) in zip(a, b))
-
-def slice_bytestring(a : bytes, slice_size):
-    #slices a bytestring in slices of slice_size, if len(a) is not a multiple of the block size, the last block will be smaller
-    #returns an array of bytestrings -> [a_slice1, a_slice2, ...]
-    res = []
-    for i in range(0, len(a), slice_size):
-        res.append(a[i: slice_size + i])
-    return res
+        self.nonce += 1
+        return self.nonce.to_bytes(16,byteorder='big')
 
 if __name__ == "__main__":
 
