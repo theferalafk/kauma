@@ -5,7 +5,8 @@ from traceback import format_exc
 from base64 import b64encode, b64decode
 from json import loads
 from padding_oracle.exploit_oracle import oracle_solver
-
+from aes_gcm.gcm_util import GF, GFElement
+from aes_gcm.aes_128_gcm import AES_128_GCM
 #------------------------------------------BYTENIGMA-------------------------------------------------------------
 
 
@@ -60,6 +61,58 @@ def _padding_oracle_attack(action_dict):
         print(format_exc(), file=stderr)
         exit(1)
 
+#------------------------------------------AES GCM------------------------------------------------------------- 
+
+def _parse_input_gcm(gcm_dict):
+    try:    
+        if gcm_dict["action"]=="gcm-block2poly":
+            return b64decode(gcm_dict["block"])
+        if gcm_dict["ation"]=="gcm-poly2block":
+            return gcm_dict["exponents"]
+        if gcm_dict["ation"]=="gcm-clmul":
+            return b64decode(gcm_dict["a"]), b64decode(gcm_dict["b"])
+        if gcm_dict["ation"]=="gcm-encrypt":
+            return b64decode(gcm_dict["key"]), b64decode(gcm_dict["nonce"]), b64decode(gcm_dict["associated_data"]), b64decode(gcm_dict["plaintext"])
+        if gcm_dict["ation"]=="":
+            return gcm_dict[""]
+    except:
+        print('error parsing gcm json', file=stderr)
+        print(format_exc(), file=stderr)
+        exit(1)
+
+
+def _gcm_block2poly(action_dict):
+    block = _parse_input_gcm(action_dict)
+    exponents = str(GF.block_to_poly(block))
+    return '{\n\t"exponents": '+exponents+'\n}'
+
+def _gcm_poly2block(action_dict):
+    exponents = _parse_input_gcm(action_dict)
+    block = b64encode(GF.poly_to_block(exponents))
+    return '{\n\t"block": "'+block+'"\n}'
+
+def _gcm_clmul(action_dict):
+    a, b = _parse_input_gcm(action_dict)
+    a = GFElement(a)
+    a_times_b = a * GFElement(b)
+    a_times_b = b64encode(GF.poly_to_block(a_times_b))
+    return '{\n\t"a_times_b": "'+a_times_b+'"\n}'
+
+def _gcm_encrypt(action_dict):
+    key, nonce, ad, pt = _parse_input_gcm(action_dict)
+    cipher = AES_128_GCM(key, nonce)
+    ciphertext, auth_tag = cipher.encrypt_and_tag(pt, ad)
+    y0 = b64encode(cipher.y0)
+    h = b64encode(cipher.auth_key)
+    return f'''{
+    "ciphertext": "{b64encode(ciphertext)}",
+    "auth_tag": "{b64encode(auth_tag)}",
+    "Y0": "{y0}",
+    "h": "{h}"
+}'''
+
+def _gcm_recover(action_dict):
+    pass
 
 #------------------------------------------ACTION PARSER-------------------------------------------------------------
 
@@ -72,6 +125,16 @@ def parse_json(input_file):
             return _bytenigma(file_content)
         if file_content['action']=='padding-oracle-attack':
             return _padding_oracle_attack(file_content)
+        if file_content['action']=='gcm_block2poly':
+            return _gcm_block2poly(file_content)
+        if file_content['action']=='gcm_poly2block':
+            return _gcm_poly2block(file_content)
+        if file_content['action']=='gcm_clmul':
+            return _gcm_clmul(file_content)
+        if file_content['action']=='gcm_encrypt':
+            return _gcm_encrypt(file_content)
+        if file_content['action']=='gcm_recover':
+            return _gcm_recover(file_content)
     except:
         print('could not parse action', file=stderr)
         print(format_exc(), file=stderr)
