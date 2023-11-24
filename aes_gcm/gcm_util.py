@@ -187,10 +187,9 @@ if __name__ == "__main__":
     assert a_times_b_poly == GF.block_to_poly(a_times_b_block)
     #also test if a and b are not of same length
     assert a*b == b*a == a_times_b_poly
-    print(GF.poly_to_block(a*b))
     #statistical tests
     import os
-    for i in range(10000):
+    for i in range(100000):
         a_block = os.urandom(16)
         b_block = os.urandom(16)
         a = GFElement(GF.block_to_poly(a_block))
