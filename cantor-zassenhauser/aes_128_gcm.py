@@ -2,7 +2,7 @@ from gcm_util import GF, GFElement, gcm_nonce
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class AES_128_GCM:
-    
+
     def __init__(self, key, nonce):
         self.key = key
         self.cipher = Cipher(algorithms.AES(key), modes.ECB())
@@ -14,9 +14,9 @@ class AES_128_GCM:
             self.y = iter(gcm_nonce(tmp))
             self.y0 = tmp
         else:
-            tmp = self._ghash(nonce, b'\x00'*64+len(nonce).to_bytes(64, byteorder='big'))
+            tmp = self._ghash(nonce+b'\x00'*(8+16-len(nonce)%16)+(len(nonce)*8).to_bytes(8, byteorder='big'),b'', True)
             self.y = iter(gcm_nonce(tmp))
-            self.y0 = nonce
+            self.y0 = tmp
 
     def _aes_ecb__encrypt(self, pt):
         encryptor = self.cipher.encryptor()
@@ -36,14 +36,16 @@ class AES_128_GCM:
             res.append(block)
         return res
 
-    def _slice_and_combine(self, ad,ct):
+    def _slice_and_combine(self, ad, ct, nonce=False):
         #slices two bytstrings into 16 byte blocks with b'\x00' appended if needed and appends length field for aes_gcm
+        if nonce:
+            return self._slice_bytestring(ct,16)
         return self._slice_bytestring(ad, 16) + self._slice_bytestring(ct, 16) + [(len(ad)*8).to_bytes(8, byteorder='big')+(len(ct)*8).to_bytes(8, byteorder='big')]
     
-    def _ghash(self, ct, ad):
+    def _ghash(self, ct, ad, nonce=False):
         h_poly = GF.block_to_poly(self.auth_key)
         hash_subkey = GFElement(h_poly)
-        mul_blocks = self._slice_and_combine(ad, ct)
+        mul_blocks = self._slice_and_combine(ad, ct, nonce)
         y = b'\x00'*16
         for block in mul_blocks:
             y_xor_block = self._byte_xor(y, block)
@@ -66,7 +68,6 @@ class AES_128_GCM:
         return self.ct
 
 if __name__ == "__main__":
-
     #known answer test 0
     key     = b'\xfe\xff\xe9\x92\x86es\x1cmj\x8f\x94g0\x83\x08'
     nonce   = b'\xca\xfe\xba\xbe\xfa\xce\xdb\xad\xde\xca\xf8\x88'
@@ -175,8 +176,6 @@ if __name__ == "__main__":
 
     ciphero = AES_128_GCM(key, nonce)
     assert ciphero.auth_key == h
-    print(y0)
-    print(ciphero.y0)
     assert ciphero.y0 == y0
     assert ciphero._encrypt(pt) == ct
     assert ciphero._auth_tag(ct, ad) == auth_tag
@@ -202,3 +201,5 @@ if __name__ == "__main__":
 
     cipherino = AES_128_GCM(key, nonce)
     assert cipherino._encrypt(ct) == pt
+
+    print("All tests passed")
