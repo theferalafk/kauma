@@ -67,7 +67,7 @@ class AES_128_GCM:
         self.ct = bytes(res)
         return self.ct
     
-    def encrypt_and_tag(self, ad, pt):
+    def encrypt_and_tag(self, pt, ad):
         ct = self._encrypt(pt)
         return ct, self._auth_tag(ct, ad) 
 
