@@ -106,7 +106,18 @@ class GFElement:
     def __mul__(self, a):
         #carryless mul on two gf elements, if the elements are not of the same gf, the multiplication uses the field of the first element e.g (a*b) field of a is used 
         return self.gf.carry_less_mul_gf(self.element, a.element)
-
+    
+    def pow(self, exp):
+        res = GFElement([0])
+        exp = bin(exp)[2:]
+        gf = GF()
+        for i in exp:
+            res = GFElement(res*res)
+            if i == '1':
+                res = GFElement(res*self)
+            res = GFElement(gf.reduce(res.element))
+        return res
+    
 class gcm_nonce:
     def __init__(self, nonce):
         #nonce should be max 96 bits and 1<=nonce<=2^64-1
@@ -189,6 +200,7 @@ if __name__ == "__main__":
     assert a*b == b*a == a_times_b_poly
     #statistical tests
     import os
+    assert GFElement([1,2,6,7,10]).pow(100).element == [4, 5, 8, 10, 12, 14, 20, 21, 25, 26, 33, 35, 38, 43, 44, 45, 46, 47, 50, 51, 53, 54, 55, 56, 57, 58, 60, 61, 64, 67, 71, 72, 74, 75, 76, 77, 78, 80, 81, 82, 83, 85, 90, 93, 94, 95, 96, 98, 99, 101, 103, 104, 105, 109, 110, 112, 115, 118, 119, 120, 121, 123, 124, 127]
     for i in range(100000):
         a_block = os.urandom(16)
         b_block = os.urandom(16)
