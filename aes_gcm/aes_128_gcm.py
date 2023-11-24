@@ -6,7 +6,7 @@ class AES_128_GCM:
     def __init__(self, key, nonce):
         self.key = key
         self.cipher = Cipher(algorithms.AES(key), modes.ECB())
-        self.auth_key = self._aes_ecb__encrypt(b'\x00'*16)
+        self.auth_key = self._aes_ecb_encrypt(b'\x00'*16)
 
         #check if nonce is 96 bit long and initialize y accordingly, otherwise transform before nonce
         if len(nonce)==12:
@@ -18,7 +18,7 @@ class AES_128_GCM:
             self.y = iter(gcm_nonce(tmp))
             self.y0 = tmp
 
-    def _aes_ecb__encrypt(self, pt):
+    def _aes_ecb_encrypt(self, pt):
         encryptor = self.cipher.encryptor()
         return encryptor.update(pt) + encryptor.finalize()
     
@@ -55,17 +55,21 @@ class AES_128_GCM:
         return y
 
     def _auth_tag(self, ct, ad=b''):
-        return self._byte_xor(self._ghash(ct, ad), self._aes_ecb__encrypt(self.y0))
+        return self._byte_xor(self._ghash(ct, ad), self._aes_ecb_encrypt(self.y0))
 
     def _encrypt(self, pt):
         res = bytearray()
         block_size = 16
         for i in range(0, len(pt), block_size):
             tmp = next(self.y)
-            xor_bytes = self._aes_ecb__encrypt(tmp)
+            xor_bytes = self._aes_ecb_encrypt(tmp)
             res += self._byte_xor(pt[i:block_size+i], xor_bytes)
         self.ct = bytes(res)
         return self.ct
+    
+    def encrypt_and_tag(self, ad, pt):
+        ct = self._encrypt(pt)
+        return ct, self._auth_tag(ct, ad) 
 
 if __name__ == "__main__":
     #known answer test 0
