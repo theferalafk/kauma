@@ -67,13 +67,13 @@ def _parse_input_gcm(gcm_dict):
     try:    
         if gcm_dict["action"]=="gcm-block2poly":
             return b64decode(gcm_dict["block"])
-        if gcm_dict["ation"]=="gcm-poly2block":
+        if gcm_dict["action"]=="gcm-poly2block":
             return gcm_dict["exponents"]
-        if gcm_dict["ation"]=="gcm-clmul":
+        if gcm_dict["action"]=="gcm-clmul":
             return b64decode(gcm_dict["a"]), b64decode(gcm_dict["b"])
-        if gcm_dict["ation"]=="gcm-encrypt":
+        if gcm_dict["action"]=="gcm-encrypt":
             return b64decode(gcm_dict["key"]), b64decode(gcm_dict["nonce"]), b64decode(gcm_dict["associated_data"]), b64decode(gcm_dict["plaintext"])
-        if gcm_dict["ation"]=="":
+        if gcm_dict["action"]=="":
             return gcm_dict[""]
     except:
         print('error parsing gcm json', file=stderr)
@@ -88,15 +88,15 @@ def _gcm_block2poly(action_dict):
 
 def _gcm_poly2block(action_dict):
     exponents = _parse_input_gcm(action_dict)
-    block = b64encode(GF.poly_to_block(exponents))
+    block = b64encode(GF.poly_to_block(exponents)).decode()
     return '{\n\t"block": "'+block+'"\n}'
 
 def _gcm_clmul(action_dict):
     a, b = _parse_input_gcm(action_dict)
-    a = GFElement(a)
-    a_times_b = a * GFElement(b)
-    a_times_b = b64encode(GF.poly_to_block(a_times_b))
-    return '{\n\t"a_times_b": "'+a_times_b+'"\n}'
+    a = GFElement(GF.block_to_poly(a))
+    b = GFElement(GF.block_to_poly(b))
+    a_times_b = b64encode(GF.poly_to_block(a*b))
+    return '{\n\t"a_times_b": "'+a_times_b.decode()+'"\n}'
 
 def _gcm_encrypt(action_dict):
     key, nonce, ad, pt = _parse_input_gcm(action_dict)
@@ -104,12 +104,7 @@ def _gcm_encrypt(action_dict):
     ciphertext, auth_tag = cipher.encrypt_and_tag(pt, ad)
     y0 = b64encode(cipher.y0)
     h = b64encode(cipher.auth_key)
-    return f'''{
-    "ciphertext": "{b64encode(ciphertext)}",
-    "auth_tag": "{b64encode(auth_tag)}",
-    "Y0": "{y0}",
-    "h": "{h}"
-}'''
+    return '{\n\t"ciphertext": "'+b64encode(ciphertext).decode()+'",\n\t"auth_tag": "'+b64encode(auth_tag).decode()+'",\n\t"Y0": "'+y0.decode()+'",\n\t"H": "'+h.decode()+'"\n}'
 
 def _gcm_recover(action_dict):
     pass
@@ -125,15 +120,15 @@ def parse_json(input_file):
             return _bytenigma(file_content)
         if file_content['action']=='padding-oracle-attack':
             return _padding_oracle_attack(file_content)
-        if file_content['action']=='gcm_block2poly':
+        if file_content['action']=='gcm-block2poly':
             return _gcm_block2poly(file_content)
-        if file_content['action']=='gcm_poly2block':
+        if file_content['action']=='gcm-poly2block':
             return _gcm_poly2block(file_content)
-        if file_content['action']=='gcm_clmul':
+        if file_content['action']=='gcm-clmul':
             return _gcm_clmul(file_content)
-        if file_content['action']=='gcm_encrypt':
+        if file_content['action']=='gcm-encrypt':
             return _gcm_encrypt(file_content)
-        if file_content['action']=='gcm_recover':
+        if file_content['action']=='gcm-recover':
             return _gcm_recover(file_content)
     except:
         print('could not parse action', file=stderr)
