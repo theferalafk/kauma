@@ -47,7 +47,7 @@ class Poly:
             e_int = self._element_to_int(element) ^ self._element_to_int(b[i])
             #print(f"{element}, {b[i]} -> int:{e_int} {bin(e_int)} -> {self._int_to_element(e_int)}")
             res.append(self._int_to_element(e_int))
-        return res
+        return Poly(res)
     
     def __mul__(self, _b):
         a = self.poly
@@ -64,9 +64,8 @@ class Poly:
         #hier müssen die dann aufaddiert werden und dann kommt res raus
         res = Poly([])
         for summand in summands:
-            print(";)", summand)
-            res = Poly(res+Poly(summand))
-        return res.poly
+            res += Poly(summand)
+        return res
 
 
 k={
@@ -97,11 +96,8 @@ for key in ["a","b","result"]:
     # b = x^2[3, 7, 9] + x^1[12] + x^0[2, 5, 9, 10]
     # c = x^2[3, 8] + x^1[6, 12] + x^0[2, 9, 10]
 #print(Poly.b64_to_list(k["a"]))
-print(Poly.b64_to_list(k["a"]))
-print(Poly.b64_to_list(k["b"]))
 print(Poly(Poly.b64_to_list(k["b"]))+Poly(Poly.b64_to_list(k["a"])))
-print(Poly.b64_to_list(k["result"]))
-print(Poly(Poly.b64_to_list(k["b"]))*Poly(Poly.b64_to_list(k["a"])))
+print((Poly(Poly.b64_to_list(k["b"]))*Poly(Poly.b64_to_list(k["a"]))).poly)
 '''
 F.<x>=GF(2^128)
 R.<X>= PolynomialRing(F)
