@@ -72,7 +72,7 @@ class Poly:
         b0_inverse = ~GFElement(_b.poly[-1])
         if a_degree < b_degree:
             return (Poly([]), self)
-        for i in range(len(tmp),-1,-1):
+        for i in range(len(tmp),0,-1):
             poly = tmp[i-1]
             #check if coefficient is 0
             if poly == []:
@@ -86,7 +86,6 @@ class Poly:
             poly_tmp = Poly(tmp)
             to_add = Poly([[]]*(i-b_degree)+(_b * Poly([quotient])).poly)
             tmp = (poly_tmp + to_add).poly[:-1]
-        print(Poly(tmp).poly)
         return Poly(list(reversed(res))), Poly(tmp)
 
     def __floordiv__(self, b):
@@ -97,6 +96,8 @@ class Poly:
         _, res = divmod(self,b)
         return res
 
+    def normalize(self):
+        return self//Poly([self.poly[-1]])
 
 
 k={
@@ -127,15 +128,15 @@ for key in ["a","b","result"]:
     # b = x^2[3, 7, 9] + x^1[12] + x^0[2, 5, 9, 10]
     # c = x^2[3, 8] + x^1[6, 12] + x^0[2, 9, 10]
 #print(Poly.b64_to_list(k["a"]))
-#a = Poly(Poly.b64_to_list(k["a"]))
-#b = Poly(Poly.b64_to_list(k["b"]))
+a = Poly(Poly.b64_to_list(k["a"]))
+b = Poly(Poly.b64_to_list(k["b"]))
 #print("a = ",a.poly)
 #print("b = ",b.poly)
 #print(a+b)
 #print("c = ", (b*a).poly)
 #print(divmod(a,b))
 #print(divmod(a,b).poly)
-#c = a*a
+c = a*a
 #gf = GF()
 #print(a.poly)
 ##print(c.poly)
@@ -153,6 +154,7 @@ for key in ["a","b","result"]:
 #print(b.poly)
 #print(c.poly)
 #print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
+print(a.normalize().poly)
 '''
 F.<x>=GF(2^128)
 R.<X>= PolynomialRing(F)
