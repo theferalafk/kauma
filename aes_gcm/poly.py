@@ -34,8 +34,8 @@ class Poly:
         return res[::-1]
 
     def __add__(self, _b):
-        a = self.poly
-        b = _b.poly
+        a = self.poly.copy()
+        b = _b.poly.copy()
         res = []
         diff = len(a) - len(b)
         if diff<0:
@@ -45,7 +45,6 @@ class Poly:
                 b.append([])
         for i, element in enumerate(a):
             e_int = self._element_to_int(element) ^ self._element_to_int(b[i])
-            #print(f"{element}, {b[i]} -> int:{e_int} {bin(e_int)} -> {self._int_to_element(e_int)}")
             res.append(self._int_to_element(e_int))
         return Poly(res)
     
@@ -64,47 +63,39 @@ class Poly:
         for summand in summands:
             res += Poly(summand)
         return res
-    
  
     def __divmod__(self, _b):
-        a = list(reversed(self.poly))
-        a_degree = len(a)
-        b = list(reversed(_b.poly))
-        b_degree = len(b)
+        a_degree = len(self.poly)
+        b_degree = len(_b.poly)
         res = []
-        remainder = []
-        #saves the temporary state while performing devision
-        tmp = Poly(self.poly)
-
-        #while len(a)>len(b) -> a[-1] / b[-1] * a[-1] -> res; a-res von eben
-        #remainder ist dann das was übrig bleibt   
+        tmp = self.poly.copy()
+        b0_inverse = ~GFElement(_b.poly[-1])
         if a_degree < b_degree:
             return (Poly([]), self)
-        
-        for i, poly in enumerate(a):
-            #check if current exp is set
+        for i in range(len(tmp),-1,-1):
+            poly = tmp[i-1]
+            #check if coefficient is 0
             if poly == []:
+                tmp = tmp[:-1]
                 continue
             #check if division is already done
-            if b_degree > a_degree-i:
+            if b_degree > i:
                 break
-            #GFElement of GF(2^128) pow(126) is its inverse because of fermat
-            #print(poly, GFElement(b[0]).pow(126).element)
-            dividend = GFElement(poly)
-            divisor = GFElement(b[0]).pow(2**128-2)
-            print("a/b", dividend.element, "\t\t",divisor.element, "\ndas kommt von", b[0])
-            quotient = dividend * divisor
-            print(i, quotient)
+            quotient = GFElement(poly) * b0_inverse
             res.append(quotient)
-            print("Was soll die Kacke", ( _b * Poly([quotient]) ).poly)
-            tmp = tmp + (self + ( _b * Poly([quotient]) ))
-            print("last tmp: ", i, tmp.poly)
-        print("res, ", list(reversed(res)))
-        print("remainder ", tmp.poly)
-        return list(reversed(res)), tmp
+            poly_tmp = Poly(tmp)
+            to_add = Poly([[]]*(i-b_degree)+(_b * Poly([quotient])).poly)
+            tmp = (poly_tmp + to_add).poly[:-1]
+        print(Poly(tmp).poly)
+        return Poly(list(reversed(res))), Poly(tmp)
 
-
-
+    def __floordiv__(self, b):
+        res, _ = divmod(self,b)
+        return res
+    
+    def __mod__(self, b):
+        _, res = divmod(self,b)
+        return res
 
 
 
@@ -136,21 +127,31 @@ for key in ["a","b","result"]:
     # b = x^2[3, 7, 9] + x^1[12] + x^0[2, 5, 9, 10]
     # c = x^2[3, 8] + x^1[6, 12] + x^0[2, 9, 10]
 #print(Poly.b64_to_list(k["a"]))
-a = Poly(Poly.b64_to_list(k["a"]))
-b = Poly(Poly.b64_to_list(k["b"]))
+#a = Poly(Poly.b64_to_list(k["a"]))
+#b = Poly(Poly.b64_to_list(k["b"]))
 #print("a = ",a.poly)
 #print("b = ",b.poly)
 #print(a+b)
 #print("c = ", (b*a).poly)
 #print(divmod(a,b))
 #print(divmod(a,b).poly)
-c = a*a
-gf = GF()
-print(a.poly)
-print(c.poly)
-div, rem = divmod(c,b)
-for i in div:
-    print('Exponent:', i)
+#c = a*a
+#gf = GF()
+#print(a.poly)
+##print(c.poly)
+#div, rem = divmod(c,b)
+#print(div)
+#print(rem)
+#print("omg im jesus", rem.poly)
+#(b*div+rem).poly
+#print(divmod(a,b))
+#tmp1, tmp2 = divmod(c,b)
+#print(tmp1.poly, tmp2.poly)
+#print("\n", b.poly, "\n", div.poly, "\n", rem.poly)
+#print(a+c)
+#print(a.poly)
+#print(b.poly)
+#print(c.poly)
 #print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
 '''
 F.<x>=GF(2^128)
