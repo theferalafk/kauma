@@ -99,7 +99,21 @@ class Poly:
     def normalize(self):
         return self//Poly([self.poly[-1]])
 
+    def gcd(self,_b):
+        tmp = Poly([[]])
+        #avoid call by reference stuff
+        a = Poly(self.poly.copy())
+        b = Poly(_b.poly.copy())
 
+        if len(a.poly) == 0:
+            return b
+        if len(b.poly) == 0:
+            return b
+        while b.poly != tmp.poly:
+            tmp = a % b
+            a = b
+            b = tmp
+        return a
 k={
 "a": [
 "BAAAAAAAAAAAAAAAAAAAAA==",
@@ -154,7 +168,8 @@ c = a*a
 #print(b.poly)
 #print(c.poly)
 #print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
-print(a.normalize().poly)
+#print(a.normalize().poly)
+#print(c.gcd(a).poly)
 '''
 F.<x>=GF(2^128)
 R.<X>= PolynomialRing(F)
