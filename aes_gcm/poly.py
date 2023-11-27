@@ -114,6 +114,23 @@ class Poly:
             a = b
             b = tmp
         return a
+    
+    def __pow__(self, exp):
+        res = Poly([[0]])
+        for i in range(exp.bit_length()-1,-1,-1):
+            res = res*res
+            if (exp>>i)&1:
+                res = res*self
+        return res
+    
+    def powmod(self, exp, mod):
+        res = Poly([[0]])
+        for i in range(exp.bit_length()-1,-1,-1):
+            res = res*res
+            if (exp>>i)&1:
+                res = res*self
+            _ , res = divmod(res, mod)
+        return res
 k={
 "a": [
 "BAAAAAAAAAAAAAAAAAAAAA==",
@@ -132,11 +149,11 @@ k={
 ]
 }
 
-for key in ["a","b","result"]:
-    a = k[key]
-    pol = ''
-    for i in range(3):
-        pol = 'x^'+str(i)+str(GF.block_to_poly(base64.b64decode(a[i]))) + ' + ' + pol
+#for key in ["a","b","result"]:
+#    a = k[key]
+#    pol = ''
+#    for i in range(3):
+#        pol = 'x^'+str(i)+str(GF.block_to_poly(base64.b64decode(a[i]))) + ' + ' + pol
     #print(pol)
     # a = x^2[7, 8, 9] + x^1[6] + x^0[5]
     # b = x^2[3, 7, 9] + x^1[12] + x^0[2, 5, 9, 10]
@@ -154,11 +171,11 @@ c = a*a
 #gf = GF()
 #print(a.poly)
 ##print(c.poly)
-#div, rem = divmod(c,b)
+div, rem = divmod(c,b)
 #print(div)
 #print(rem)
 #print("omg im jesus", rem.poly)
-#(b*div+rem).poly
+print((b*div+rem).poly)
 #print(divmod(a,b))
 #tmp1, tmp2 = divmod(c,b)
 #print(tmp1.poly, tmp2.poly)
@@ -169,7 +186,13 @@ c = a*a
 #print(c.poly)
 #print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
 #print(a.normalize().poly)
+#print((a**5).poly)
+print(a.powmod(1000000,b).poly)
 #print(c.gcd(a).poly)
+print("bauers testvektor", Poly.b64_to_list(["MsGegcpw1DgpcRIVrFtD0w==","KAqoMEtc+VfvBzZCRioQNQ=="]))
+#_ , test2 = divmod(a**200, b)
+#print(test2.poly)
+
 '''
 F.<x>=GF(2^128)
 R.<X>= PolynomialRing(F)
