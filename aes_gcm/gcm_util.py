@@ -1,7 +1,8 @@
 class GF:
-    def __init__(self, characteristic_polynomial=[0,1,2,7,128]):
-        self._cp = characteristic_polynomial
+    def __init__(self, characteristic_polynomial=[0,1,2,7,128], order=2**128):
+        self.cp = characteristic_polynomial
         self._field_size = characteristic_polynomial[-1]
+        self.order = order
 
     def _poly_to_bitarray(a):
         #transform poly list to bit array
@@ -23,7 +24,7 @@ class GF:
     
     def _reduce_one(self, a):
         res = a
-        for exp in self._cp:
+        for exp in self.cp:
             res[exp] ^= 1
         return res[:-1]
 
@@ -46,7 +47,7 @@ class GF:
             #checks for leading 1 to reduce
             if tmp[-1]==1:
                 #xor characteristic poly shifted to bit array
-                for exp in self._cp:
+                for exp in self.cp:
                     tmp[exp+i] ^= 1
             tmp=tmp[:-1]
         return GF._bitarray_to_poly(tmp, self._field_size)
@@ -107,7 +108,7 @@ class GFElement:
         #carryless mul on two gf elements, if the elements are not of the same gf, the multiplication uses the field of the first element e.g (a*b) field of a is used 
         return self.gf.carry_less_mul_gf(self.element, a.element)
     
-    def pow(self, exp):
+    def __pow__(self, exp):
         res = GFElement([0])
         exp = bin(exp)[2:]
         for i in exp:
@@ -115,6 +116,10 @@ class GFElement:
             if i == '1':
                 res = GFElement(res*self)
         return res
+    
+    def __invert__(self):
+        #GFElement inverse because of fermat
+        return self**(self.gf.order-2)
     
 class gcm_nonce:
     def __init__(self, nonce):
