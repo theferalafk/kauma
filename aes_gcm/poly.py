@@ -31,7 +31,7 @@ class Poly:
             if e_int > 2**i-1:
                 res.append(i)
                 e_int -= 2**i
-        return res
+        return res[::-1]
 
     def __add__(self, _b):
         a = self.poly
@@ -57,8 +57,6 @@ class Poly:
             # summanden werden hier berechnet
             tmp = []
             for element_b in b:
-                print("MUUUUL", GFElement(element_a).element, GFElement(element_b).element)
-                print(GFElement(element_a)*GFElement(element_b))
                 tmp.append(GFElement(element_a)*GFElement(element_b))
             summands.append([[]]*i + tmp)
         #hier müssen die dann aufaddiert werden und dann kommt res raus
@@ -94,14 +92,16 @@ class Poly:
             #print(poly, GFElement(b[0]).pow(126).element)
             dividend = GFElement(poly)
             divisor = GFElement(b[0]).pow(2**128-2)
-            print("a/b", dividend.element, "\t\t",divisor.element)
+            print("a/b", dividend.element, "\t\t",divisor.element, "\ndas kommt von", b[0])
             quotient = dividend * divisor
             print(i, quotient)
             res.append(quotient)
-            tmp = tmp + ( _b * Poly([quotient]) )
+            print("Was soll die Kacke", ( _b * Poly([quotient]) ).poly)
+            tmp = tmp + (self + ( _b * Poly([quotient]) ))
+            print("last tmp: ", i, tmp.poly)
         print("res, ", list(reversed(res)))
         print("remainder ", tmp.poly)
-        return tmp
+        return list(reversed(res)), tmp
 
 
 
@@ -148,8 +148,9 @@ c = a*a
 gf = GF()
 print(a.poly)
 print(c.poly)
-print(c.poly)
-print("result is: ", divmod(a,b))
+div, rem = divmod(c,b)
+for i in div:
+    print('Exponent:', i)
 #print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
 '''
 F.<x>=GF(2^128)
