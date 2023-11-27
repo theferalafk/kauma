@@ -110,10 +110,9 @@ class GFElement:
     
     def __pow__(self, exp):
         res = GFElement([0])
-        exp = bin(exp)[2:]
-        for i in exp:
+        for i in range(a.bit_length()-1,-1,-1):
             res = GFElement(res*res)
-            if i == '1':
+            if (exp>>i)&1:
                 res = GFElement(res*self)
         return res
     
