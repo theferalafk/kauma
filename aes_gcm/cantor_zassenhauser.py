@@ -3,7 +3,9 @@ from gcm_util import GF, GFElement
 from os import urandom
 
 class CZ:
-
+    #hallo herr bauer, ich schaffe es nicht k2 weiter zu faktorisieren. ich weiß nicht woran es liegt und ich habe viele schritte in sage mitgerechnet
+    #da ist irgendwo ein bug, dass ich nicht finde.....
+    #entweder hab ich mein polynom nicht richtig gebaut oder es liegt an etwas anderem, es ist aber kurz vor abgabe also rip...
     def __init__(self, f: Poly):
         self.f = f
         self.degree = len(f.poly)-1
