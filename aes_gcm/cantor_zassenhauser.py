@@ -3,7 +3,8 @@ from gcm_util import GF, GFElement
 from os import urandom
 
 class CZ:
-    #hallo herr bauer, ich schaffe es nicht k2 weiter zu faktorisieren. ich weiß nicht woran es liegt und ich habe viele schritte in sage mitgerechnet
+    #hallo herr bauer, ich schaffe es nicht k2 weiter zu faktorisieren. die faktorisierung selbst stimmt aber für das gegebene polynom
+    #ich weiß nicht woran es liegt und ich habe viele schritte in sage mitgerechnet
     #da ist irgendwo ein bug, dass ich nicht finde.....
     #entweder hab ich mein polynom nicht richtig gebaut oder es liegt an etwas anderem, es ist aber kurz vor abgabe also rip...
     def __init__(self, f: Poly):
@@ -74,6 +75,8 @@ class CZ:
         print(k1.poly, k2.poly)
         k2_1, k2_2 = self.get_factor(k2)
         print(k2_1.poly, k2_2.poly)
+        k2_2_1, k2_2_2 = self.get_factor(k2_2)
+        print(k2_2_1.poly, k2_2_2.poly)
         return res + rem.poly
 
 def poly_to_sage(poly):
@@ -116,10 +119,10 @@ if __name__ == "__main__":
     #ad + c0..c1
 
 
-    tmp = msg1["tag"]+16*b'\x00' + msg1["ct"]
+    tmp = msg1['tag']+16*b'\x00' + msg1["ct"]
     poly_string = [tmp[i:i+16] for i in range(0, len(tmp), 16)]
     a = Poly(Poly.bytes_to_list(poly_string))
-    tmp = msg2["tag"]+16*b'\x00' + msg2["ct"]
+    tmp = msg2['tag']+16*b'\x00' + msg2["ct"]
     poly_string = [tmp[i:i+16] for i in range(0, len(tmp), 16)]
     b = Poly(Poly.bytes_to_list(poly_string))
     #print(a+b)
@@ -133,14 +136,14 @@ if __name__ == "__main__":
     #test = Poly([[], [], [4, 5, 6, 7, 8, 9, 12, 16, 18, 20, 23, 25, 28, 29, 31, 34, 35, 37, 38, 39, 40, 41, 42, 43, 49, 52, 56, 57, 67, 68, 69, 72, 74, 75, 76, 77, 78, 79, 80, 84, 87, 88, 90, 91, 92, 96, 97, 98, 99, 101, 102, 103, 104, 108, 114, 120, 121, 122, 126, 127], [1, 4, 9, 12, 15, 16, 18, 22, 23, 24, 27, 30, 33, 34, 35, 37, 38, 39, 40, 43, 44, 46, 49, 50, 53, 54, 57, 59, 60, 61, 62, 65, 70, 71, 72, 73, 74, 76, 77, 78, 81, 83, 85, 87, 88, 89, 90, 92, 93, 96, 99, 100, 101, 106, 109, 111, 113, 116, 117, 118, 120, 121, 123, 124, 127],[0]])
     #t, tt = divmod(test,Poly([[],[0]]))
     #print(t.poly, tt.poly)
-    #carry = cz.factor_poly2()
+    carry = cz.factor_poly2()
     #for cand in cands:
     #    print("candidate: ", cand)
     #c1=[0, 1, 3, 9, 10, 13, 15, 19, 20, 24, 26, 27, 29, 30, 32, 33, 35, 37, 39, 41, 42, 43, 44, 46, 47, 51, 52, 53, 54, 56, 58, 61, 63, 64, 67, 69, 72, 74, 77, 79, 80, 83, 85, 86, 88, 90, 93, 95, 96, 97, 98, 99, 101, 102, 104, 105, 109, 110, 111, 112, 113, 119, 123, 125, 126]
     #c2=[0, 2, 3, 4, 6, 7, 10, 12, 15, 18, 20, 23, 25, 26, 27, 29, 30, 32, 33, 35, 36, 37, 38, 39, 41, 43, 46, 50, 52, 58, 59, 60, 62, 63, 64, 66, 67, 69, 70, 71, 72, 77, 81, 82, 85, 87, 89, 90, 91, 93, 94, 95, 97, 99, 100, 101, 103, 105, 106, 107, 108, 109, 112, 113, 122, 123, 127]
     #c3=[2, 6, 7, 13, 15, 16, 19, 22, 25, 27, 30, 33, 34, 35, 36, 37, 39, 40, 42, 43, 46, 47, 49, 51, 56, 57, 65, 66, 72, 73, 76, 77, 78, 79, 80, 82, 85, 86, 90, 91, 92, 93, 94, 98, 99, 101, 102, 103, 104, 107, 108, 109, 110, 113, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
     #c4=[0]
-    carry = [[[1, 6, 7, 11, 13, 14, 15, 17, 19, 20, 23, 24, 25, 27, 29, 30, 33, 34, 36, 37, 40, 41, 44, 49, 51, 54, 58, 62, 63, 65, 66, 67, 68, 70, 72, 75, 76, 78, 83, 85, 87, 90, 91, 92, 94, 96, 97, 100, 101, 103, 106, 111, 112, 118, 122, 126], [0]]]
+    #carry = [[[1, 6, 7, 11, 13, 14, 15, 17, 19, 20, 23, 24, 25, 27, 29, 30, 33, 34, 36, 37, 40, 41, 44, 49, 51, 54, 58, 62, 63, 65, 66, 67, 68, 70, 72, 75, 76, 78, 83, 85, 87, 90, 91, 92, 94, 96, 97, 100, 101, 103, 106, 111, 112, 118, 122, 126], [0]]]
     l = (48*8).to_bytes(16,byteorder='big')
     y0 = []
     for h in carry:
