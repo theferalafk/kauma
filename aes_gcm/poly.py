@@ -19,13 +19,13 @@ class Poly:
             res.append(GF.block_to_poly(element))
         return res
     
-    def _element_to_int(self, element):
+    def _element_to_int(element):
         res = 0
         for exp in element:
             res += 2**exp
         return res
 
-    def _int_to_element(self, e_int):
+    def _int_to_element(e_int):
         res = []
         for i in range(129,-1,-1):
             if e_int > 2**i-1:
@@ -44,8 +44,8 @@ class Poly:
             for _ in range(diff):
                 b.append([])
         for i, element in enumerate(a):
-            e_int = self._element_to_int(element) ^ self._element_to_int(b[i])
-            res.append(self._int_to_element(e_int))
+            e_int = Poly._element_to_int(element) ^ Poly._element_to_int(b[i])
+            res.append(Poly._int_to_element(e_int))
         return Poly(res)
     
     def __mul__(self, _b):
@@ -65,6 +65,8 @@ class Poly:
         return res
  
     def __divmod__(self, _b):
+        if _b.poly == [] or _b.poly == [[]]:
+            return Poly([]), Poly([])
         a_degree = len(self.poly)
         b_degree = len(_b.poly)
         res = []
@@ -72,21 +74,33 @@ class Poly:
         b0_inverse = ~GFElement(_b.poly[-1])
         if a_degree < b_degree:
             return (Poly([]), self)
+        ending_on_zero = 0
         for i in range(len(tmp),0,-1):
             poly = tmp[i-1]
             #check if coefficient is 0
-            if poly == []:
-                tmp = tmp[:-1]
-                continue
-            #check if division is already done
             if b_degree > i:
                 break
+            if poly == []:
+                tmp = tmp[:-1]
+                ending_on_zero += 1
+                continue
+            if b_degree > i:
+                break
+            
+            #check if division is already done
             quotient = GFElement(poly) * b0_inverse
             res.append(quotient)
             poly_tmp = Poly(tmp)
             to_add = Poly([[]]*(i-b_degree)+(_b * Poly([quotient])).poly)
             tmp = (poly_tmp + to_add).poly[:-1]
-        return Poly(list(reversed(res))), Poly(tmp)
+            ending_on_zero = 0
+        res += [[]]*ending_on_zero
+        #test if tmp is empty
+        tmp_clean = Poly([])
+        for polies in tmp:
+            if polies:
+                tmp_clean = Poly(tmp)
+        return Poly(list(reversed(res))), tmp_clean
 
     def __floordiv__(self, b):
         res, _ = divmod(self,b)
@@ -100,7 +114,7 @@ class Poly:
         return self//Poly([self.poly[-1]])
 
     def gcd(self,_b):
-        tmp = Poly([[]])
+        tmp = Poly([[0]])
         #avoid call by reference stuff
         a = Poly(self.poly.copy())
         b = Poly(_b.poly.copy())
@@ -108,12 +122,14 @@ class Poly:
         if len(a.poly) == 0:
             return b
         if len(b.poly) == 0:
-            return b
-        while b.poly != tmp.poly:
+            return a
+        while b.poly != []:
             tmp = a % b
             a = b
             b = tmp
-        return a
+        if a.poly == []:
+            return Poly([[0]]) 
+        return a.normalize()
     
     def __pow__(self, exp):
         res = Poly([[0]])
@@ -131,74 +147,80 @@ class Poly:
                 res = res*self
             _ , res = divmod(res, mod)
         return res
-k={
-"a": [
-"BAAAAAAAAAAAAAAAAAAAAA==",
-"AgAAAAAAAAAAAAAAAAAAAA==",
-"AcAAAAAAAAAAAAAAAAAAAA=="
-],
-"b": [
-"JGAAAAAAAAAAAAAAAAAAAA==",
-"AAgAAAAAAAAAAAAAAAAAAA==",
-"EUAAAAAAAAAAAAAAAAAAAA=="
-],
-"result": [
-"IGAAAAAAAAAAAAAAAAAAAA==",
-"AggAAAAAAAAAAAAAAAAAAA==",
-"EIAAAAAAAAAAAAAAAAAAAA=="
-]
-}
 
-#for key in ["a","b","result"]:
-#    a = k[key]
-#    pol = ''
-#    for i in range(3):
-#        pol = 'x^'+str(i)+str(GF.block_to_poly(base64.b64decode(a[i]))) + ' + ' + pol
-    #print(pol)
-    # a = x^2[7, 8, 9] + x^1[6] + x^0[5]
-    # b = x^2[3, 7, 9] + x^1[12] + x^0[2, 5, 9, 10]
-    # c = x^2[3, 8] + x^1[6, 12] + x^0[2, 9, 10]
-#print(Poly.b64_to_list(k["a"]))
-a = Poly(Poly.b64_to_list(k["a"]))
-b = Poly(Poly.b64_to_list(k["b"]))
-#print("a = ",a.poly)
-#print("b = ",b.poly)
-#print(a+b)
-#print("c = ", (b*a).poly)
-#print(divmod(a,b))
-#print(divmod(a,b).poly)
-c = a*a
-#gf = GF()
-#print(a.poly)
-##print(c.poly)
-div, rem = divmod(c,b)
-#print(div)
-#print(rem)
-#print("omg im jesus", rem.poly)
-print((b*div+rem).poly)
-#print(divmod(a,b))
-#tmp1, tmp2 = divmod(c,b)
-#print(tmp1.poly, tmp2.poly)
-#print("\n", b.poly, "\n", div.poly, "\n", rem.poly)
-#print(a+c)
-#print(a.poly)
-#print(b.poly)
-#print(c.poly)
-#print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
-#print(a.normalize().poly)
-#print((a**5).poly)
-print(a.powmod(1000000,b).poly)
-#print(c.gcd(a).poly)
-print("bauers testvektor", Poly.b64_to_list(["MsGegcpw1DgpcRIVrFtD0w==","KAqoMEtc+VfvBzZCRioQNQ=="]))
-#_ , test2 = divmod(a**200, b)
-#print(test2.poly)
+if __name__ == "__main__":
 
-'''
-F.<x>=GF(2^128)
-R.<X>= PolynomialRing(F)
-a = (x^9+x^8+x^7)*X^2 + (x^6)*X + x^5
-b = (x^9+x^7+x^3)*X^2 + (x^12)*X + (x^2+x^5+x^9+x^10)
-t = X^2*(x^7+x^8+x^9) + X^1*(x^6) + X^0*(x^5)
-b*a
-t^3
-'''
+
+
+    k={
+    "a": [
+    "BAAAAAAAAAAAAAAAAAAAAA==",
+    "AgAAAAAAAAAAAAAAAAAAAA==",
+    "AcAAAAAAAAAAAAAAAAAAAA=="
+    ],
+    "b": [
+    "JGAAAAAAAAAAAAAAAAAAAA==",
+    "AAgAAAAAAAAAAAAAAAAAAA==",
+    "EUAAAAAAAAAAAAAAAAAAAA=="
+    ],
+    "result": [
+    "IGAAAAAAAAAAAAAAAAAAAA==",
+    "AggAAAAAAAAAAAAAAAAAAA==",
+    "EIAAAAAAAAAAAAAAAAAAAA=="
+    ]
+    }
+
+    #for key in ["a","b","result"]:
+    #    a = k[key]
+    #    pol = ''
+    #    for i in range(3):
+    #        pol = 'x^'+str(i)+str(GF.block_to_poly(base64.b64decode(a[i]))) + ' + ' + pol
+        #print(pol)
+        # a = x^2[7, 8, 9] + x^1[6] + x^0[5]
+        # b = x^2[3, 7, 9] + x^1[12] + x^0[2, 5, 9, 10]
+        # c = x^2[3, 8] + x^1[6, 12] + x^0[2, 9, 10]
+    #print(Poly.b64_to_list(k["a"]))
+    a = Poly(Poly.b64_to_list(k["a"]))
+    b = Poly(Poly.b64_to_list(k["b"]))
+    #print("a = ",a.poly)
+    #print("b = ",b.poly)
+    #print(a+b)
+    #print("c = ", (b*a).poly)
+    #print(divmod(a,b))
+    #print(divmod(a,b).poly)
+    c = a*a
+    #gf = GF()
+    #print(a.poly)
+    ##print(c.poly)
+    div, rem = divmod(c,b)
+    #print(div)
+    #print(rem)
+    #print("omg im jesus", rem.poly)
+    #print((b*div+rem).poly)
+    #print(divmod(a,b))
+    #tmp1, tmp2 = divmod(c,b)
+    #print(tmp1.poly, tmp2.poly)
+    #print("\n", b.poly, "\n", div.poly, "\n", rem.poly)
+    #print(a+c)
+    #print(a.poly)
+    #print(b.poly)
+    #print(c.poly)
+    #print((GFElement([3,7,9])*GFElement([3,7,9]).pow(2**128-2)))
+    #print(a.normalize().poly)
+    #print((a**5).poly)
+    #print(a.powmod(1000000,b).poly)
+    #print(c.gcd(a).poly)
+    #print("bauers testvektor", Poly.b64_to_list(["MsGegcpw1DgpcRIVrFtD0w==","KAqoMEtc+VfvBzZCRioQNQ=="]))
+    print(a.normalize().poly)
+    #_ , test2 = divmod(a**200, b)
+    #print(test2.poly)
+
+    '''
+    F.<x>=GF(2^128)
+    R.<X>= PolynomialRing(F)
+    a = (x^9+x^8+x^7)*X^2 + (x^6)*X + x^5
+    b = (x^9+x^7+x^3)*X^2 + (x^12)*X + (x^2+x^5+x^9+x^10)
+    t = X^2*(x^7+x^8+x^9) + X^1*(x^6) + X^0*(x^5)
+    b*a
+    t^3
+    '''
