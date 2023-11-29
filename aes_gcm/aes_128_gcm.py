@@ -1,4 +1,4 @@
-from gcm_util import GF, GFElement, gcm_nonce
+from aes_gcm.gcm_util import GF, GFElement, gcm_nonce
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class AES_128_GCM:

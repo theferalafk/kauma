@@ -1,7 +1,7 @@
-from aes_128_gcm import AES_128_GCM
-from cantor_zassenhauser import CZ
-from poly import Poly
-from gcm_util import GFElement
+from aes_gcm.aes_128_gcm import AES_128_GCM
+from aes_gcm.cantor_zassenhauser import CZ
+from aes_gcm.poly import Poly
+from aes_gcm.gcm_util import GFElement
 class CrackMsg:
     def __init__(self, ct, ad, tag):
         self.ct = [ct[i:i+16] for i in range(0, len(ct), 16)]
@@ -34,14 +34,14 @@ class GHashCrack:
         if self.msg2.ad == b'' or self.msg2.ad == b'\x00'*16:
             ad_2 = []
         
-        poly_1 = Poly.bytes_to_list([msg1.tag]+msg1_l+self.msg1.ct[::-1]+ad_1)
-        poly_2 = Poly.bytes_to_list([msg2.tag]+msg2_l+self.msg2.ct[::-1]+ad_2)
+        poly_1 = Poly.bytes_to_list([self.msg1.tag]+msg1_l+self.msg1.ct[::-1]+ad_1)
+        poly_2 = Poly.bytes_to_list([self.msg2.tag]+msg2_l+self.msg2.ct[::-1]+ad_2)
         return (Poly(poly_1) + Poly(poly_2)).normalize()
 
     def verify_mask(self,y0,h):
-        ghash = AES_128_GCM._ghash(AES_128_GCM._slice_and_combine(msg3.ad,b''.join(msg3.ct)), h)
+        ghash = AES_128_GCM._ghash(AES_128_GCM._slice_and_combine(self.msg3.ad,b''.join(self.msg3.ct)), h)
         forged_tag = AES_128_GCM._byte_xor(ghash, y0)
-        if forged_tag==msg3.tag:
+        if forged_tag==self.msg3.tag:
             return True
         return False
 
@@ -49,7 +49,7 @@ class GHashCrack:
         cz = CZ(self.construct_poly())
         candidates = cz.factor_poly()
         for i in candidates:
-            to_verify = AES_128_GCM._slice_and_combine(msg1.ad, b''.join(msg1.ct))
+            to_verify = AES_128_GCM._slice_and_combine(self.msg1.ad, b''.join(self.msg1.ct))
             mask = self._gen_mask(self.msg1.tag, to_verify, GFElement(i[0]))
             if self.verify_mask(mask,GFElement(i[0])):
                 self.y0 = mask

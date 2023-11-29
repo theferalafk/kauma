@@ -1,5 +1,5 @@
-from poly import Poly
-from gcm_util import GF, GFElement
+from aes_gcm.poly import Poly
+from aes_gcm.gcm_util import GF, GFElement
 from os import urandom
 
 class CZ:

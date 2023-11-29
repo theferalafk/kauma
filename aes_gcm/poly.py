@@ -1,4 +1,4 @@
-from gcm_util import GF, GFElement
+from aes_gcm.gcm_util import GF, GFElement
 import base64
 
 
