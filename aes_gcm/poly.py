@@ -82,11 +82,11 @@ class Poly:
                 break
             if poly == []:
                 tmp = tmp[:-1]
+                res.append([])
                 ending_on_zero += 1
                 continue
             if b_degree > i:
                 break
-            
             #check if division is already done
             quotient = GFElement(poly) * b0_inverse
             res.append(quotient)
@@ -149,9 +149,6 @@ class Poly:
         return res
 
 if __name__ == "__main__":
-
-
-
     k={
     "a": [
     "BAAAAAAAAAAAAAAAAAAAAA==",
@@ -211,10 +208,10 @@ if __name__ == "__main__":
     #print(a.powmod(1000000,b).poly)
     #print(c.gcd(a).poly)
     #print("bauers testvektor", Poly.b64_to_list(["MsGegcpw1DgpcRIVrFtD0w==","KAqoMEtc+VfvBzZCRioQNQ=="]))
-    print(a.normalize().poly)
+    #print(a.normalize().poly)
     #_ , test2 = divmod(a**200, b)
     #print(test2.poly)
-
+    
     '''
     F.<x>=GF(2^128)
     R.<X>= PolynomialRing(F)
