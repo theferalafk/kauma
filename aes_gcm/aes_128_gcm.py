@@ -14,7 +14,7 @@ class AES_128_GCM:
             self.y = iter(gcm_nonce(tmp))
             self.y0 = tmp
         else:
-            tmp = self._ghash(nonce+b'\x00'*(8+16-len(nonce)%16)+(len(nonce)*8).to_bytes(8, byteorder='big'),b'', True)
+            tmp = self._ghash_wrapper(nonce+b'\x00'*(8+16-len(nonce)%16)+(len(nonce)*8).to_bytes(8, byteorder='big'),b'', True)
             self.y = iter(gcm_nonce(tmp))
             self.y0 = tmp
 
@@ -22,7 +22,7 @@ class AES_128_GCM:
         encryptor = self.cipher.encryptor()
         return encryptor.update(pt) + encryptor.finalize()
     
-    def _byte_xor(self, a, b):
+    def _byte_xor(a, b):
             return bytes(a ^ b for (a, b) in zip(a, b))
 
     def _slice_bytestring(self, a : bytes, slice_size):
@@ -42,20 +42,23 @@ class AES_128_GCM:
             return self._slice_bytestring(ct,16)
         return self._slice_bytestring(ad, 16) + self._slice_bytestring(ct, 16) + [(len(ad)*8).to_bytes(8, byteorder='big')+(len(ct)*8).to_bytes(8, byteorder='big')]
     
-    def _ghash(self, ct, ad, nonce=False):
-        h_poly = GF.block_to_poly(self.auth_key)
-        hash_subkey = GFElement(h_poly)
-        mul_blocks = self._slice_and_combine(ad, ct, nonce)
+    def _ghash(byte_blocks, hash_subkey):
         y = b'\x00'*16
-        for block in mul_blocks:
-            y_xor_block = self._byte_xor(y, block)
+        for block in byte_blocks:
+            y_xor_block = AES_128_GCM._byte_xor(y, block)
             poly_block = GF.block_to_poly(y_xor_block)
             tmp = hash_subkey * GFElement(poly_block)
             y = GF.poly_to_block(tmp)
         return y
 
+    def _ghash_wrapper(self, ct, ad, nonce=False):
+        h_poly = GF.block_to_poly(self.auth_key)
+        hash_subkey = GFElement(h_poly)
+        mul_blocks = self._slice_and_combine(ad, ct, nonce)
+        return AES_128_GCM._ghash(mul_blocks, hash_subkey)
+
     def _auth_tag(self, ct, ad=b''):
-        return self._byte_xor(self._ghash(ct, ad), self._aes_ecb_encrypt(self.y0))
+        return AES_128_GCM._byte_xor(self._ghash_wrapper(ct, ad), self._aes_ecb_encrypt(self.y0))
 
     def _encrypt(self, pt):
         res = bytearray()
@@ -63,7 +66,7 @@ class AES_128_GCM:
         for i in range(0, len(pt), block_size):
             tmp = next(self.y)
             xor_bytes = self._aes_ecb_encrypt(tmp)
-            res += self._byte_xor(pt[i:block_size+i], xor_bytes)
+            res += AES_128_GCM._byte_xor(pt[i:block_size+i], xor_bytes)
         self.ct = bytes(res)
         return self.ct
     
