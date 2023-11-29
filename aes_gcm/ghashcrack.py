@@ -18,7 +18,6 @@ class GHashCrack:
         self.y0 = False
 
     def _gen_mask(self, tag, msg_blocks, h):
-        print(msg_blocks)
         ghash = AES_128_GCM._ghash(msg_blocks, h)
         return AES_128_GCM._byte_xor(ghash, tag)
     
@@ -42,24 +41,20 @@ class GHashCrack:
     def verify_mask(self,y0,h):
         ghash = AES_128_GCM._ghash(AES_128_GCM._slice_and_combine(msg3.ad,b''.join(msg3.ct)), h)
         forged_tag = AES_128_GCM._byte_xor(ghash, y0)
-        print(ghash, forged_tag)
         if forged_tag==msg3.tag:
             return True
         return False
 
     def crack(self):
         cz = CZ(self.construct_poly())
-        print(cz.f.poly)
         candidates = cz.factor_poly()
         for i in candidates:
             to_verify = AES_128_GCM._slice_and_combine(msg1.ad, b''.join(msg1.ct))
             mask = self._gen_mask(self.msg1.tag, to_verify, GFElement(i[0]))
-            print(mask)
             if self.verify_mask(mask,GFElement(i[0])):
                 self.y0 = mask
                 self.h = GFElement(i[0])
                 break
-        print("done")
         return True
     
     def forge_auth_tag(self, ad, ct):
