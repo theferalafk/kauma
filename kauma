@@ -114,7 +114,7 @@ def _gcm_recover(action_dict):
     msg1, msg2, msg3, ct, ad = _parse_input_gcm(action_dict)
     cracker = GHashCrack(msg1, msg2, msg3)
     cracker.crack()
-    return '{\n\t"msg4_tag": "'+b64encode(cracker.forge_auth_tag(ad, ct))+'"\n}'
+    return '{\n\t"msg4_tag": "'+b64encode(cracker.forge_auth_tag(ad, ct)).decode()+'"\n}'
 
 #------------------------------------------ACTION PARSER-------------------------------------------------------------
 
