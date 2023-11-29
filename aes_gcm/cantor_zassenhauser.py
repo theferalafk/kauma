@@ -1,7 +1,6 @@
 from poly import Poly
 from gcm_util import GF, GFElement
 from os import urandom
-from aes_128_gcm import AES_128_GCM
 
 class CZ:
     #hallo herr bauer, ich schaffe es nicht k2 weiter zu faktorisieren. ich weiß nicht woran es liegt und ich habe viele schritte in sage mitgerechnet
@@ -33,9 +32,7 @@ class CZ:
 
     def get_factor(self, p: Poly):
         poly = Poly(p.poly.copy())
-        for i in range(21):
-            if i %10==0:
-                print('running', i)
+        for i in range(10):
             tmp = self.cz_step(poly)
             if tmp:
                 k1, k2 = tmp
@@ -46,6 +43,7 @@ class CZ:
         res = []
         rem = Poly(self.f.poly.copy())
         tmp = self.get_factor(rem)
+        active = True
         if tmp:
             k1, k2 = tmp
             #print(k1.poly, k2.poly)
@@ -59,8 +57,11 @@ class CZ:
                             nc1, nc2 = new_candidates
                             #print(nc1.poly, nc2.poly)
                             tmp += [nc1,nc2]
+                        else:
+                            break
                     else:
                         res.append(fraction.poly)
+                
                 candidates = tmp.copy()
         return res
 
@@ -100,115 +101,11 @@ if __name__ == "__main__":
         'ct' : b'\xa8\x81\x1f\xd4\xea\xc0A\xf2\xdd\x18\nP\t\x07\xc15V>\xbbO}r\x17~\\\xca\tY\xe4\xdal\x1b\xaf\xcb:\x0eX\xa5!\xf4\xe9\xfb\xdf\xc5_\x98\xa5\x9b',
         'ad' : b'',
     }
-
-    # TODO Poly takes long byte/b64 strings
-    #ad + c0..c1
-
-
-    tmp = msg1["tag"]+16*b'\x00' + msg1["ct"]
-    poly_string = [tmp[i:i+16] for i in range(0, len(tmp), 16)]
-    msg1_bl = poly_string
-    #print(b"msg1 ", poly_string)
-    a = Poly(Poly.bytes_to_list(poly_string))
-    tmp = msg2["tag"]+16*b'\x00' + msg2["ct"]
-    poly_string = [tmp[i:i+16] for i in range(0, len(tmp), 16)]
-    b = Poly(Poly.bytes_to_list(poly_string))
-    #print("\n\n")
-    #print(b"msg2 ", poly_string)
-    msg2_bl = poly_string
-    
-    #print(a+b)
-    #poly_to_sage((a+b).poly)
-    cz_poly = (a+b).normalize()
-    #for i in (a+b).poly:
-        #print(GF.poly_to_block(i))
-    #print(len(cz_poly.poly))
-    cz = CZ(cz_poly)
-    #print(cz_poly.poly)
-    res = ''
-    #print(cz_poly.poly)
-    #test = Poly([[], [], [4, 5, 6, 7, 8, 9, 12, 16, 18, 20, 23, 25, 28, 29, 31, 34, 35, 37, 38, 39, 40, 41, 42, 43, 49, 52, 56, 57, 67, 68, 69, 72, 74, 75, 76, 77, 78, 79, 80, 84, 87, 88, 90, 91, 92, 96, 97, 98, 99, 101, 102, 103, 104, 108, 114, 120, 121, 122, 126, 127], [1, 4, 9, 12, 15, 16, 18, 22, 23, 24, 27, 30, 33, 34, 35, 37, 38, 39, 40, 43, 44, 46, 49, 50, 53, 54, 57, 59, 60, 61, 62, 65, 70, 71, 72, 73, 74, 76, 77, 78, 81, 83, 85, 87, 88, 89, 90, 92, 93, 96, 99, 100, 101, 106, 109, 111, 113, 116, 117, 118, 120, 121, 123, 124, 127],[0]])
-    #t, tt = divmod(test,Poly([[],[0]]))
-    #print(t.poly, tt.poly)
     tmp = Poly.bytes_to_list([b'\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'dj\xb3\xad*\xa0\xd3a\x02>L\x80\xc5\xed\x00\x95', b'\xec\x06\x05P:f\xa6\xf8\xc2!G\x81\xd1\xa7u5', b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00', b'\x1b\x00\x1b\xb3&\xfc\xba\x8a_\\\x0f\xfa)\xe7o9'][::-1])
     print(tmp)
-    printer = []
-    #for _ in range(10):
-    #    cz = CZ(Poly(tmp))
-    #    carry = cz.factor_poly()
-    #    res = Poly([[0]])
-    #    for i in carry:
-    #        res *= Poly(i)
-    #    print(res.poly)
-    #    byto = []
-    #    for i in carry:
-    #        byto.append(GF.poly_to_block(i[0]))
-    #    printer.append(byto)
-    #for i in printer:
-    #    print(i)
     cz = CZ(Poly(tmp))
-    carry = cz.factor_poly()
+    for i in range(20):
+        carry = cz.factor_poly()
+        print(len(carry))
     for i in carry:
-        m1 = b'\x00'*16+msg1["ct"]+(48*8).to_bytes(16, byteorder='big')
-        print(CZ.gen_mask(msg1["tag"], [m1[i:i+16] for i in range(0,len(m1),16)],GFElement(i[0])))
-    '''for i in range(10):
-        carry = cz.factor_poly2()
-        lol += [carry]
-    for i in lol:
-        res = []
-        for j in i:
-            res += [GF.poly_to_block(j)]
-        print(res)
-    '''
-    #for cand in carry:
-    #    print("candidate: ", cand)
-    #c1=[0, 1, 3, 9, 10, 13, 15, 19, 20, 24, 26, 27, 29, 30, 32, 33, 35, 37, 39, 41, 42, 43, 44, 46, 47, 51, 52, 53, 54, 56, 58, 61, 63, 64, 67, 69, 72, 74, 77, 79, 80, 83, 85, 86, 88, 90, 93, 95, 96, 97, 98, 99, 101, 102, 104, 105, 109, 110, 111, 112, 113, 119, 123, 125, 126]
-    #c2=[0, 2, 3, 4, 6, 7, 10, 12, 15, 18, 20, 23, 25, 26, 27, 29, 30, 32, 33, 35, 36, 37, 38, 39, 41, 43, 46, 50, 52, 58, 59, 60, 62, 63, 64, 66, 67, 69, 70, 71, 72, 77, 81, 82, 85, 87, 89, 90, 91, 93, 94, 95, 97, 99, 100, 101, 103, 105, 106, 107, 108, 109, 112, 113, 122, 123, 127]
-    #c3=[2, 6, 7, 13, 15, 16, 19, 22, 25, 27, 30, 33, 34, 35, 36, 37, 39, 40, 42, 43, 46, 47, 49, 51, 56, 57, 65, 66, 72, 73, 76, 77, 78, 79, 80, 82, 85, 86, 90, 91, 92, 93, 94, 98, 99, 101, 102, 103, 104, 107, 108, 109, 110, 113, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126]
-    #c4=[0]
-    #carry = [[[1, 6, 7, 11, 13, 14, 15, 17, 19, 20, 23, 24, 25, 27, 29, 30, 33, 34, 36, 37, 40, 41, 44, 49, 51, 54, 58, 62, 63, 65, 66, 67, 68, 70, 72, 75, 76, 78, 83, 85, 87, 90, 91, 92, 94, 96, 97, 100, 101, 103, 106, 111, 112, 118, 122, 126], [0]]]
-    '''
-    l = (48*8).to_bytes(16,byteorder='big')
-    y0 = []
-    for h in carry:
-        res = ''
-        tmp = 16*b'\x00'+msg1["ct"]+l+msg1["tag"]
-        poly_string = [tmp[i:i+16] for i in range(0, len(tmp), 16)]
-        for i,blk in enumerate(poly_string):
-            u = GF.block_to_poly(blk)
-            exp = len(poly_string)-i-1
-            H = h
-            if len(h)==2:
-                H = h[0]
-            tmpo = (GFElement(H)**exp)*GFElement(u)
-            res = add_gf(res, tmpo)
-        y0.append(GF.poly_to_block(res))
-    #print(y0)
-
-
-    for ci, h in enumerate(carry):
-        tmp = 16*b'\x00'+msg3["ct"]+l+y0[ci]
-        poly_string = [tmp[i:i+16] for i in range(0, len(tmp), 16)]
-        for i,blk in enumerate(poly_string):
-            u = GF.block_to_poly(blk)
-            exp = len(poly_string)-i-1
-            H = h
-            if len(h)==2:
-                H = h[0]
-            tmpo = (GFElement(H)**exp)*GFElement(u)
-            res = add_gf(res, tmpo)
-        #print(GF.poly_to_block(res))
-    #for i in range(100):
-    #    res = cz.cz_step(cz_poly)
-    #    if res:
-    #        break
-    #k1, k2 = res
-    #print(k1.poly)
-    #print(k2.poly)
-    #print(a.poly, len(a.poly))
-    #print(b.poly, len(b.poly))
-    #print(cz_poly.poly, len(cz_poly.poly))b'\xa45\xce\x1fS\xe2\x0e\x1ca\xf8\x81\xab\x1aj\xcd\xbd'
-b'\xe0i2\x1cI\xc0\x7f[\x08\x91\xd2=4`\x01\x1d'
-b'N\xb0\xd2|\xed\x1f0\xe1\xdb\xfe\xa2\xaa\xe7\x98\xfcb'
-b'\xda\xe0\x0f\xfal\xa6\xa2\xf5\x7f\xb4<\xceC3\xe13'
-'''
+        print(GF.poly_to_block(i[0]))
