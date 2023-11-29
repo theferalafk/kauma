@@ -1,4 +1,4 @@
-from aes_gcm.gcm_util import GF, GFElement, gcm_nonce
+from gcm_util import GF, GFElement, gcm_nonce
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class AES_128_GCM:
@@ -25,7 +25,7 @@ class AES_128_GCM:
     def _byte_xor(a, b):
             return bytes(a ^ b for (a, b) in zip(a, b))
 
-    def _slice_bytestring(self, a : bytes, slice_size):
+    def _slice_bytestring(a : bytes, slice_size):
         #slices a bytestring in slices of slice_size, if len(a) is not a multiple of the block size, the last block will be smaller
         #returns an array of bytestrings -> [a_slice1, a_slice2, ...]
         res = []
@@ -36,11 +36,11 @@ class AES_128_GCM:
             res.append(block)
         return res
 
-    def _slice_and_combine(self, ad, ct, nonce=False):
+    def _slice_and_combine(ad, ct, nonce=False):
         #slices two bytstrings into 16 byte blocks with b'\x00' appended if needed and appends length field for aes_gcm
         if nonce:
-            return self._slice_bytestring(ct,16)
-        return self._slice_bytestring(ad, 16) + self._slice_bytestring(ct, 16) + [(len(ad)*8).to_bytes(8, byteorder='big')+(len(ct)*8).to_bytes(8, byteorder='big')]
+            return AES_128_GCM._slice_bytestring(ct,16)
+        return AES_128_GCM._slice_bytestring(ad, 16) + AES_128_GCM._slice_bytestring(ct, 16) + [(len(ad)*8).to_bytes(8, byteorder='big')+(len(ct)*8).to_bytes(8, byteorder='big')]
     
     def _ghash(byte_blocks, hash_subkey):
         y = b'\x00'*16
@@ -54,7 +54,7 @@ class AES_128_GCM:
     def _ghash_wrapper(self, ct, ad, nonce=False):
         h_poly = GF.block_to_poly(self.auth_key)
         hash_subkey = GFElement(h_poly)
-        mul_blocks = self._slice_and_combine(ad, ct, nonce)
+        mul_blocks = AES_128_GCM._slice_and_combine(ad, ct, nonce)
         return AES_128_GCM._ghash(mul_blocks, hash_subkey)
 
     def _auth_tag(self, ct, ad=b''):
