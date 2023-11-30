@@ -64,17 +64,3 @@ class CZ:
                 
                 candidates = tmp.copy()
         return res
-
-
-def poly_to_sage(poly):
-    res = ''
-    for i, p in enumerate(poly):
-        res += '('
-        for j in p:
-            res += f'x^{j}+'
-        res = res[:-1] + f')*X^{i}+'
-    print(res)
-
-def add_gf(a,b):
-    res = Poly._element_to_int(a) ^ Poly._element_to_int(b)
-    return Poly._int_to_element(res)
