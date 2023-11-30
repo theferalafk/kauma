@@ -1,5 +1,5 @@
 from aes_gcm.aes_128_gcm import AES_128_GCM
-from aes_gcm.cantor_zassenhauser import CZ
+from aes_gcm.cantor_zassenhaus import CZ
 from aes_gcm.poly import Poly
 from aes_gcm.gcm_util import GFElement
 class CrackMsg:
