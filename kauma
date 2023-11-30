@@ -7,6 +7,7 @@ from json import loads
 from padding_oracle.exploit_oracle import oracle_solver
 from aes_gcm.gcm_util import GF, GFElement
 from aes_gcm.aes_128_gcm import AES_128_GCM
+from aes_gcm.ghashcrack import GHashCrack, CrackMsg
 #------------------------------------------BYTENIGMA-------------------------------------------------------------
 
 
@@ -73,8 +74,11 @@ def _parse_input_gcm(gcm_dict):
             return b64decode(gcm_dict["a"]), b64decode(gcm_dict["b"])
         if gcm_dict["action"]=="gcm-encrypt":
             return b64decode(gcm_dict["key"]), b64decode(gcm_dict["nonce"]), b64decode(gcm_dict["associated_data"]), b64decode(gcm_dict["plaintext"])
-        if gcm_dict["action"]=="":
-            return gcm_dict[""]
+        if gcm_dict["action"]=="gcm-recover":
+            msg1 = CrackMsg(b64decode(gcm_dict["msg1"]["ciphertext"]), b64decode(gcm_dict["msg1"]["associated_data"]), b64decode(gcm_dict["msg1"]["auth_tag"]))
+            msg2 = CrackMsg(b64decode(gcm_dict["msg2"]["ciphertext"]), b64decode(gcm_dict["msg2"]["associated_data"]), b64decode(gcm_dict["msg2"]["auth_tag"]))
+            msg3 = CrackMsg(b64decode(gcm_dict["msg3"]["ciphertext"]), b64decode(gcm_dict["msg3"]["associated_data"]), b64decode(gcm_dict["msg3"]["auth_tag"]))
+            return msg1, msg2, msg3, b64decode(gcm_dict["msg4"]["ciphertext"]), b64decode(gcm_dict["msg4"]["associated_data"])
     except:
         print('error parsing gcm json', file=stderr)
         print(format_exc(), file=stderr)
@@ -107,7 +111,13 @@ def _gcm_encrypt(action_dict):
     return '{\n\t"ciphertext": "'+b64encode(ciphertext).decode()+'",\n\t"auth_tag": "'+b64encode(auth_tag).decode()+'",\n\t"Y0": "'+y0.decode()+'",\n\t"H": "'+h.decode()+'"\n}'
 
 def _gcm_recover(action_dict):
-    pass
+    msg1, msg2, msg3, ct, ad = _parse_input_gcm(action_dict)
+    cracker = GHashCrack(msg1, msg2, msg3)
+    cracker.crack()
+    res = cracker.forge_auth_tag(ad, ct)
+    if not res:
+        res = b'False'
+    return '{\n\t"msg4_tag": "'+b64encode(res).decode()+'"\n}'
 
 #------------------------------------------ACTION PARSER-------------------------------------------------------------
 
