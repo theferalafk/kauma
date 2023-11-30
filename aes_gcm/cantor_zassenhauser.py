@@ -1,11 +1,9 @@
 from aes_gcm.poly import Poly
-from aes_gcm.gcm_util import GF, GFElement
+from aes_gcm.gcm_util import GF
 from os import urandom
 
 class CZ:
-    #hallo herr bauer, ich schaffe es nicht k2 weiter zu faktorisieren. ich weiß nicht woran es liegt und ich habe viele schritte in sage mitgerechnet
-    #da ist irgendwo ein bug, dass ich nicht finde.....
-    #entweder hab ich mein polynom nicht richtig gebaut oder es liegt an etwas anderem, es ist aber kurz vor abgabe also rip...
+    #tries to factories a poly of class Poly 
     def __init__(self, f: Poly):
         self.f = f
         self.degree = len(f.poly)-1
@@ -18,7 +16,7 @@ class CZ:
         return Poly(res)
 
     def cz_step(self, p : Poly):
-        #möglicher fehler, ist d vom großen oder vom aktuellen polynom abhängig?
+        #implementation of cantor zassenhaus
         q = 2**128
         h = CZ._randpoly(self.degree-1)
         g = h.powmod(((q-1)//3), self.f)+Poly([[0]])
@@ -30,7 +28,8 @@ class CZ:
         else:
             return None
 
-    def get_factor(self, p: Poly):
+    def _get_factor(self, p: Poly):
+        #tries 10 times to factor poly
         poly = Poly(p.poly.copy())
         for i in range(10):
             tmp = self.cz_step(poly)
@@ -40,22 +39,21 @@ class CZ:
         return None
 
     def factor_poly(self):
+        #tries to factor a poly until only factor of degree 1 are remaining
         res = []
         rem = Poly(self.f.poly.copy())
         tmp = self.get_factor(rem)
         active = True
         if tmp:
             k1, k2 = tmp
-            #print(k1.poly, k2.poly)
             candidates = [k1, k2]
             while candidates:
                 tmp = []
                 for fraction in candidates:
                     if len(fraction.poly)>2:
-                        new_candidates = self.get_factor(fraction)
+                        new_candidates = self._get_factor(fraction)
                         if new_candidates:
                             nc1, nc2 = new_candidates
-                            #print(nc1.poly, nc2.poly)
                             tmp += [nc1,nc2]
                         else:
                             break
