@@ -42,12 +42,12 @@ class CZ:
         #tries to factor a poly until only factor of degree 1 are remaining
         res = []
         rem = Poly(self.f.poly.copy())
-        tmp = self.get_factor(rem)
-        active = True
+        tmp = self._get_factor(rem)
+        tries = 0
         if tmp:
             k1, k2 = tmp
             candidates = [k1, k2]
-            while candidates:
+            while candidates and tries<100:
                 tmp = []
                 for fraction in candidates:
                     if len(fraction.poly)>2:
@@ -59,6 +59,6 @@ class CZ:
                             break
                     else:
                         res.append(fraction.poly)
-                
+                tries+=1
                 candidates = tmp.copy()
         return res
