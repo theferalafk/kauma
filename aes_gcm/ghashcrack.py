@@ -43,7 +43,7 @@ class GHashCrack:
     def verify_mask(self,y0,h):
         if not (y0 and h):
             return False
-        ghash = AES_128_GCM._ghash(AES_128_GCM._slice_and_combine(b''.join(self.msg3.ad),b''.join(self.msg3.ct)), h)
+        ghash = AES_128_GCM._ghash(AES_128_GCM._slice_and_combine(self.msg3.ad, self.msg3.ct), h)
         forged_tag = AES_128_GCM._byte_xor(ghash, y0)
         if forged_tag==self.msg3.tag:
             return True
@@ -54,10 +54,8 @@ class GHashCrack:
         yo = self.construct_poly()
         cz = CZ(yo)
         candidates = cz.factor_poly()
-        print(len(yo.poly), len(candidates))
-        print(candidates)
         for i in candidates:
-            to_verify = AES_128_GCM._slice_and_combine(b''.join(self.msg1.ad), b''.join(self.msg1.ct))
+            to_verify = AES_128_GCM._slice_and_combine(self.msg1.ad, self.msg1.ct)
             mask = self._ghash_xor(self.msg1.tag, to_verify, GFElement(i[0]))
             if self.verify_mask(mask,GFElement(i[0])):
                 self.y0 = mask
