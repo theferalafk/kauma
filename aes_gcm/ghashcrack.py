@@ -58,7 +58,6 @@ class GHashCrack:
             candidates = cz.factor_poly()
             if len(yo.poly)-1==len(candidates):
                 break
-        print(len(yo.poly), len(candidates))
         for i in candidates:
             to_verify = AES_128_GCM._slice_and_combine(self.msg1.ad, self.msg1.ct)
             mask = self._ghash_xor(self.msg1.tag, to_verify, GFElement(i[0]))
