@@ -56,7 +56,8 @@ class CZ:
                             nc1, nc2 = new_candidates
                             tmp += [nc1,nc2]
                         else:
-                            break
+                            #early abort so in case of wrong factorization not much time is wasted
+                            return res
                     else:
                         res.append(fraction.poly)
                 tries+=1
